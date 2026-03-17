@@ -26,7 +26,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. After 10 or more alarm events, alarm delivery continues without interruption (credit-limit replenishment is working)
   4. Disconnecting and reconnecting the driver leaves no leaked subscription slots on the PLC (PlcSubscriptionsFree recovers to its previous value)
   5. Tag read/write polling rate is not degraded while alarms are flowing (alarm thread is isolated from the tag read cycle)
-**Plans**: TBD
+**Plans:** 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Fix library bugs (BUG-01, BUG-02, BUG-05) in AlarmsHandler.cs, add public alarm receive API, extend S7CP_connection with alarm thread fields
+- [ ] 01-02-PLAN.md — Create AlarmThread.cs with alarm receive loop and MongoDB write, integrate spawn/stop into ConnectionThread
 
 ## Progress
 
@@ -35,4 +39,4 @@ Phases execute in numeric order: 1
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. End-to-End Alarm Pipeline | 0/? | Not started | - |
+| 1. End-to-End Alarm Pipeline | 0/2 | Not started | - |
