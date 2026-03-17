@@ -1,6 +1,7 @@
 # Phase 1: End-to-End Alarm Pipeline - Context
 
 **Gathered:** 2026-03-17
+**Updated:** 2026-03-17
 **Status:** Ready for planning
 
 <domain>
@@ -21,10 +22,15 @@ Fix all 5 known protocol bugs in S7CommPlusDriver, build the alarm subscription 
 - BUG-04 (null dai from ack-only notifications): **log + skip** — log a debug-level message ("ack-only notification, skipping") and continue the loop. No MongoDB write for ack-only PDUs.
 - BUG-05 (RelationId collision): alarm subscription uses `0x7fffc002` as a hardcoded distinct constant (tag subscription uses `0x7fffc001`).
 
+### PDU demux / connection isolation
+- **Two separate TCP connections** — one `S7CommPlusConnection` for tag polling (existing), a second dedicated `S7CommPlusConnection` for alarm subscription only. The library's single shared `m_ReceivedPDUs` queue makes sharing a connection between two threads unsafe; two connections eliminates any race.
+- The alarm connection is opened **only after the tag connection succeeds** — if the tag connection fails, no alarm subscription is attempted.
+- If the alarm connection drops while the tag connection is up: **log the loss and let the alarm thread exit**. Tag polling continues unaffected. The alarm connection is re-established the next time the tag connection reconnects (i.e., via the natural reconnect cycle of `ConnectionThread`). Independent alarm reconnect is deferred to LIFE-04 (v2).
+
 ### Alarm thread design
-- **Dedicated alarm thread per connection**, separate from the existing `connectionThread` that handles tag read/write. Mirrors the existing pattern (`thrRedundancy`, `thrMongoCmd`, `connectionThread` each being their own `Thread`).
-- Thread-safe queue (`ConcurrentQueue`) passes `AlarmsDai` + `Notification` metadata from alarm receiver to MongoDB writer.
-- MongoDB writer for alarms runs on the **alarm thread itself** (not the shared `ProcessMongo` task) — keeps alarm writes independent of tag bulk-write performance.
+- **Dedicated alarm thread per connection**, separate from the existing `connectionThread` that handles tag read/write. The alarm thread owns its own `S7CommPlusConnection` object exclusively.
+- The alarm thread's loop: Connect alarm connection → AlarmSubscriptionCreate → receive loop → on exit: AlarmSubscriptionDelete → Disconnect.
+- MongoDB writer for alarms runs **on the alarm thread itself** (direct `InsertOneAsync` per event, no intermediate queue needed since the alarm connection already serialises receive + write). Keeps alarm writes independent of tag bulk-write performance.
 
 ### MongoDB document schema
 - Collection name: `s7plusAlarmEvents`
@@ -38,8 +44,8 @@ Fix all 5 known protocol bugs in S7CommPlusDriver, build the alarm subscription 
 
 ### Claude's Discretion
 - Exact MongoDB index definition on `s7plusAlarmEvents` (if any)
-- Alarm thread startup/shutdown sequencing relative to the tag connection thread
-- Whether the alarm queue drains before shutdown or drops on disconnect
+- Whether the alarm connection reuses the same PLC credentials as the tag connection (yes, same endpoint and credentials from `S7CP_connection`)
+- On shutdown: whether in-flight alarm receives are drained before `AlarmSubscriptionDelete` is called
 
 </decisions>
 
@@ -80,9 +86,10 @@ Fix all 5 known protocol bugs in S7CommPlusDriver, build the alarm subscription 
 - `BulkWriteAsync` used for tag data writes; alarm events use `InsertOneAsync` or small `InsertManyAsync` (events are infrequent compared to tag polling).
 
 ### Integration Points
-- `ConnectionThread` in Program.cs: After successful PLC connect + tag subscription, add alarm subscription creation and start alarm thread.
-- On disconnect/shutdown: call `AlarmSubscriptionDelete()` before closing the connection, then signal alarm thread to stop.
-- `TestWaitForAlarmNotifications` in AlarmsHandler.cs: Replace with a production receive loop in S7CommPlusClient that runs indefinitely until cancelled, rather than a fixed-count loop.
+- `ConnectionThread` in Program.cs: After successful tag connection, spawn alarm thread (passing the same `S7CP_connection` config). The alarm thread opens its own `S7CommPlusConnection` independently.
+- Alarm thread lifecycle tied to the tag connection: when `ConnectionThread` resets `srv.connection = null` on disconnect, signal the alarm thread to stop and wait for it to exit before the next reconnect attempt.
+- `TestWaitForAlarmNotifications` in AlarmsHandler.cs: Replaced by a production infinite receive loop in S7CommPlusClient (using the alarm thread's own connection). The loop calls `WaitForNewS7plusReceived` with a reasonable timeout, handles `NotImplementedException` (BUG-03), null-checks dai (BUG-04), and writes to MongoDB.
+- The alarm connection does NOT need browsing or tag mapping — connect, subscribe, receive loop, clean disconnect only.
 
 </code_context>
 
