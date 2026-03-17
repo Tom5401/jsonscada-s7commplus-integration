@@ -11,33 +11,33 @@ Prerequisites — must be resolved before alarm subscription can function reliab
 
 - [x] **BUG-01**: Credit-limit renewal targets correct alarm subscription ObjectId (fix wrong ObjectId reference in `SubscriptionSetCreditLimit` call)
 - [x] **BUG-02**: Alarm subscription slot on PLC is deleted cleanly on disconnect (fix `AlarmSubscriptionDelete` to delete subscription object, not session)
-- [ ] **BUG-03**: Unknown PDU types are handled gracefully (catch `NotImplementedException` from `Notification.Deserialize` without crashing alarm thread)
-- [ ] **BUG-04**: Ack-only notification events are handled without null dereference (null-check `AlarmsDai.FromNotificationObject` result before use)
+- [x] **BUG-03**: Unknown PDU types are handled gracefully (catch `NotImplementedException` from `Notification.Deserialize` without crashing alarm thread)
+- [x] **BUG-04**: Ack-only notification events are handled without null dereference (null-check `AlarmsDai.FromNotificationObject` result before use)
 - [x] **BUG-05**: Alarm subscription uses a distinct RelationId from tag subscription (assign separate value to prevent PLC-side collision)
 
 ### Alarm Subscription Lifecycle
 
-- [ ] **LIFE-01**: Driver creates alarm subscription on successful PLC connection
+- [x] **LIFE-01**: Driver creates alarm subscription on successful PLC connection
 - [x] **LIFE-02**: Driver maintains continuous credit-limit replenishment loop so subscription never goes silent
 - [x] **LIFE-03**: Driver deletes alarm subscription cleanly when disconnecting or shutting down
 
 ### Alarm Event Data
 
-- [ ] **DATA-01**: Each alarm event captures alarm state (Coming = active / Going = cleared)
-- [ ] **DATA-02**: Each alarm event captures alarm text as configured in TIA Portal
-- [ ] **DATA-03**: Each alarm event captures PLC-side event timestamp (UTC)
-- [ ] **DATA-04**: Each alarm event captures acknowledgement state (passive receive, no write-back)
+- [x] **DATA-01**: Each alarm event captures alarm state (Coming = active / Going = cleared)
+- [x] **DATA-02**: Each alarm event captures alarm text as configured in TIA Portal
+- [x] **DATA-03**: Each alarm event captures PLC-side event timestamp (UTC)
+- [x] **DATA-04**: Each alarm event captures acknowledgement state (passive receive, no write-back)
 
 ### Threading & Pipeline
 
-- [ ] **THRD-01**: Alarm notifications are received on a dedicated thread separate from the tag read/write thread
-- [ ] **THRD-02**: Thread-safe queue passes alarm events from notification receiver to MongoDB writer
+- [x] **THRD-01**: Alarm notifications are received on a dedicated thread separate from the tag read/write thread
+- [x] **THRD-02**: Thread-safe queue passes alarm events from notification receiver to MongoDB writer
 
 ### MongoDB Integration
 
-- [ ] **MONGO-01**: Alarm events are written to a dedicated `s7plusAlarmEvents` collection (separate from `realtimeData`)
-- [ ] **MONGO-02**: Alarm writes use acknowledged write concern (WriteConcern.W1 minimum)
-- [ ] **MONGO-03**: Each alarm event document contains at minimum: `cpuAlarmId`, `alarmState`, `alarmText`, `timestamp`, `ackState`, `connectionId`, `createdAt`
+- [x] **MONGO-01**: Alarm events are written to a dedicated `s7plusAlarmEvents` collection (separate from `realtimeData`)
+- [x] **MONGO-02**: Alarm writes use acknowledged write concern (WriteConcern.W1 minimum)
+- [x] **MONGO-03**: Each alarm event document contains at minimum: `cpuAlarmId`, `alarmState`, `alarmText`, `timestamp`, `ackState`, `connectionId`, `createdAt`
 
 ## v2 Requirements
 
@@ -71,21 +71,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | BUG-01 | Phase 1 | Complete |
 | BUG-02 | Phase 1 | Complete |
-| BUG-03 | Phase 1 | Pending |
-| BUG-04 | Phase 1 | Pending |
+| BUG-03 | Phase 1 | Complete |
+| BUG-04 | Phase 1 | Complete |
 | BUG-05 | Phase 1 | Complete |
-| LIFE-01 | Phase 1 | Pending |
+| LIFE-01 | Phase 1 | Complete |
 | LIFE-02 | Phase 1 | Complete |
 | LIFE-03 | Phase 1 | Complete |
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| THRD-01 | Phase 1 | Pending |
-| THRD-02 | Phase 1 | Pending |
-| MONGO-01 | Phase 1 | Pending |
-| MONGO-02 | Phase 1 | Pending |
-| MONGO-03 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Complete |
+| DATA-02 | Phase 1 | Complete |
+| DATA-03 | Phase 1 | Complete |
+| DATA-04 | Phase 1 | Complete |
+| THRD-01 | Phase 1 | Complete |
+| THRD-02 | Phase 1 | Complete |
+| MONGO-01 | Phase 1 | Complete |
+| MONGO-02 | Phase 1 | Complete |
+| MONGO-03 | Phase 1 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total

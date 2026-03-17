@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-17T14:07:41.896Z"
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-17T14:22:53.706Z"
 last_activity: 2026-03-17 — Roadmap created
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 
 *Updated after each plan completion*
 | Phase 01-end-to-end-alarm-pipeline P01-01 | 15 | 2 tasks | 2 files |
+| Phase 01-end-to-end-alarm-pipeline P01-02 | 10 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -65,6 +66,9 @@ Recent decisions affecting current work:
 - [Phase 01-end-to-end-alarm-pipeline]: m_AlarmSubscriptionRelationId = 0x7fffc002 to avoid collision with tag subscription RelationId 0x7fffc001
 - [Phase 01-end-to-end-alarm-pipeline]: Credit-limit replenishment included in WaitForAlarmNotification — keeps alarm thread body minimal
 - [Phase 01-end-to-end-alarm-pipeline]: AlarmEventsCollectionName placed in Common.cs colocated with S7CP_connection
+- [Phase 01-end-to-end-alarm-pipeline]: LCID 1033 (English) hardcoded for FromNotificationObject — consistent with project language decision
+- [Phase 01-end-to-end-alarm-pipeline]: InsertOneAsync with GetAwaiter().GetResult() for alarm MongoDB writes — sync-over-async acceptable for low-frequency alarm events in synchronous thread
+- [Phase 01-end-to-end-alarm-pipeline]: AlarmThread in separate partial class file — keeps ConnectionThread focused on tag polling lifecycle
 
 ### Pending Todos
 
@@ -77,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T14:07:41.893Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-17T14:22:53.701Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None
