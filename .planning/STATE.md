@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 1 context gathered
-last_updated: "2026-03-17T11:53:58.544Z"
+stopped_at: Phase 1 context updated — PDU demux decision added
+last_updated: "2026-03-17T12:10:50.090Z"
 last_activity: 2026-03-17 — Roadmap created
 progress:
   total_phases: 1
@@ -73,6 +73,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T11:53:58.533Z
-Stopped at: Phase 1 context gathered
+Last session: 2026-03-17T12:10:50.071Z
+Stopped at: Phase 1 context updated — PDU demux decision added
 Resume file: .planning/phases/01-end-to-end-alarm-pipeline/01-CONTEXT.md
