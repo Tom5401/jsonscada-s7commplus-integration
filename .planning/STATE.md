@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: planning
-stopped_at: Phase 1 context updated — PDU demux decision added
-last_updated: "2026-03-17T12:10:50.090Z"
+stopped_at: Completed 01-01-PLAN.md
+last_updated: "2026-03-17T14:07:41.896Z"
 last_activity: 2026-03-17 — Roadmap created
 progress:
   total_phases: 1
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 - Trend: -
 
 *Updated after each plan completion*
+| Phase 01-end-to-end-alarm-pipeline P01-01 | 15 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,9 @@ Recent decisions affecting current work:
 - Separate MongoDB collection for alarm events (not realtimeData) — cleaner model for time-series log entries
 - Extend S7CommPlusClient (not a new project) — keeps the PoC cohesive
 - Read-only ack — reduces scope; write-back deferred
+- [Phase 01-end-to-end-alarm-pipeline]: m_AlarmSubscriptionRelationId = 0x7fffc002 to avoid collision with tag subscription RelationId 0x7fffc001
+- [Phase 01-end-to-end-alarm-pipeline]: Credit-limit replenishment included in WaitForAlarmNotification — keeps alarm thread body minimal
+- [Phase 01-end-to-end-alarm-pipeline]: AlarmEventsCollectionName placed in Common.cs colocated with S7CP_connection
 
 ### Pending Todos
 
@@ -73,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T12:10:50.071Z
-Stopped at: Phase 1 context updated — PDU demux decision added
-Resume file: .planning/phases/01-end-to-end-alarm-pipeline/01-CONTEXT.md
+Last session: 2026-03-17T14:07:41.893Z
+Stopped at: Completed 01-01-PLAN.md
+Resume file: None

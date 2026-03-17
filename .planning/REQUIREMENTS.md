@@ -9,17 +9,17 @@
 
 Prerequisites — must be resolved before alarm subscription can function reliably.
 
-- [ ] **BUG-01**: Credit-limit renewal targets correct alarm subscription ObjectId (fix wrong ObjectId reference in `SubscriptionSetCreditLimit` call)
-- [ ] **BUG-02**: Alarm subscription slot on PLC is deleted cleanly on disconnect (fix `AlarmSubscriptionDelete` to delete subscription object, not session)
+- [x] **BUG-01**: Credit-limit renewal targets correct alarm subscription ObjectId (fix wrong ObjectId reference in `SubscriptionSetCreditLimit` call)
+- [x] **BUG-02**: Alarm subscription slot on PLC is deleted cleanly on disconnect (fix `AlarmSubscriptionDelete` to delete subscription object, not session)
 - [ ] **BUG-03**: Unknown PDU types are handled gracefully (catch `NotImplementedException` from `Notification.Deserialize` without crashing alarm thread)
 - [ ] **BUG-04**: Ack-only notification events are handled without null dereference (null-check `AlarmsDai.FromNotificationObject` result before use)
-- [ ] **BUG-05**: Alarm subscription uses a distinct RelationId from tag subscription (assign separate value to prevent PLC-side collision)
+- [x] **BUG-05**: Alarm subscription uses a distinct RelationId from tag subscription (assign separate value to prevent PLC-side collision)
 
 ### Alarm Subscription Lifecycle
 
 - [ ] **LIFE-01**: Driver creates alarm subscription on successful PLC connection
-- [ ] **LIFE-02**: Driver maintains continuous credit-limit replenishment loop so subscription never goes silent
-- [ ] **LIFE-03**: Driver deletes alarm subscription cleanly when disconnecting or shutting down
+- [x] **LIFE-02**: Driver maintains continuous credit-limit replenishment loop so subscription never goes silent
+- [x] **LIFE-03**: Driver deletes alarm subscription cleanly when disconnecting or shutting down
 
 ### Alarm Event Data
 
@@ -69,14 +69,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| BUG-01 | Phase 1 | Pending |
-| BUG-02 | Phase 1 | Pending |
+| BUG-01 | Phase 1 | Complete |
+| BUG-02 | Phase 1 | Complete |
 | BUG-03 | Phase 1 | Pending |
 | BUG-04 | Phase 1 | Pending |
-| BUG-05 | Phase 1 | Pending |
+| BUG-05 | Phase 1 | Complete |
 | LIFE-01 | Phase 1 | Pending |
-| LIFE-02 | Phase 1 | Pending |
-| LIFE-03 | Phase 1 | Pending |
+| LIFE-02 | Phase 1 | Complete |
+| LIFE-03 | Phase 1 | Complete |
 | DATA-01 | Phase 1 | Pending |
 | DATA-02 | Phase 1 | Pending |
 | DATA-03 | Phase 1 | Pending |
