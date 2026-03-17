@@ -35,7 +35,7 @@ Prerequisites — must be resolved before alarm subscription can function reliab
 
 ### MongoDB Integration
 
-- [ ] **MONGO-01**: Alarm events are written to a dedicated `alarmEvents` collection (separate from `realtimeData`)
+- [ ] **MONGO-01**: Alarm events are written to a dedicated `s7plusAlarmEvents` collection (separate from `realtimeData`)
 - [ ] **MONGO-02**: Alarm writes use acknowledged write concern (WriteConcern.W1 minimum)
 - [ ] **MONGO-03**: Each alarm event document contains at minimum: `cpuAlarmId`, `alarmState`, `alarmText`, `timestamp`, `ackState`, `connectionId`, `createdAt`
 
@@ -90,8 +90,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 **Coverage:**
 - v1 requirements: 17 total
 - Mapped to phases: 17
-- Unmapped: 0 ✓
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-17 after roadmap creation*
+*Last updated: 2026-03-17 — MONGO-01 collection name corrected from `alarmEvents` to `s7plusAlarmEvents` per CONTEXT.md locked decision*
