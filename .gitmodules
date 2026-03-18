@@ -1,0 +1,7 @@
+[submodule "json-scada"]
+    path = json-scada
+    url = https://github.com/Tom5401/json-scada.git
+
+[submodule "S7CommPlusDriver"]
+    path = S7CommPlusDriver
+    url = https://github.com/Tom5401/S7CommPlusDriver.git
