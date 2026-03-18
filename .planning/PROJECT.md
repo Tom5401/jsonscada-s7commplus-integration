@@ -6,6 +6,15 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.0 — PoC validated live with PLCSIM Advanced V8 + TIA Portal v21 on 2026-03-18.
 
+## Current Milestone: v1.1 — Alarm Management & Viewer
+
+**Goal:** Close the ack loop (fix ackState bug + write-back to PLC), enrich alarm data (class name), and add a TIA Portal-style Alarms Viewer in json-scada AdminUI.
+
+**Target features:**
+- Fix ackState field always-true bug and implement alarm acknowledgment write-back to PLC
+- Resolve alarm class name from numerical ID and persist alongside the number in MongoDB
+- New S7Plus Alarms Viewer page in AdminUI (Vue 3 + Vuetify), separate from the existing tag-based viewer, with acknowledge capability
+
 ## Core Value
 
 Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values), so operators see real events the moment they occur.
@@ -27,12 +36,14 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ### Active
 
-*(None — v1.0 PoC complete. Next requirements defined in new milestone.)*
+- [ ] Fix ackState field in MongoDB (always-true bug) and implement alarm ack write-back to PLC
+- [ ] Resolve alarm class name from numerical ID; persist name in MongoDB alongside number
+- [ ] New S7Plus Alarms Viewer page in AdminUI (Vue 3 + Vuetify), separate from existing tag-based viewer, with acknowledge capability
 
 ### Out of Scope
 
-- Sending ack commands from json-scada back to the PLC — PoC is read-only
-- AdminUI changes or alarm display in json-scada frontend — data in MongoDB is the deliverable
+- Polling-based alarm detection — native subscription only (carried from v1.0)
+- Upstream contribution to json-scada — internal use only
 - Polling-based alarm detection — native subscription only
 - Upstream contribution to json-scada — internal use only
 - Multi-PLC load distribution or HA redundancy — single connection PoC
@@ -58,7 +69,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - **Protocol**: S7CommPlus only. Target: S7-1200 and S7-1500 PLCs
 - **Language**: C#/.NET (consistent with existing S7CommPlusClient)
 - **Storage**: MongoDB (consistent with json-scada architecture)
-- **Ack direction**: Read-only. No write-back to PLC
+- **Ack direction**: Write-back to PLC now in scope for v1.1
 
 ## Key Decisions
 
@@ -66,7 +77,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 |----------|-----------|---------|
 | Separate MongoDB collection `s7plusAlarmEvents` | Alarm events are time-series log entries, not live point state | ✓ Good — clean separation confirmed |
 | Extend S7CommPlusClient (not new project) | Cohesive PoC; alarm subscription belongs alongside tag driver | ✓ Good — single build, shared config |
-| Read-only ack | Reduces PoC scope; write-back can be added later | — Pending for future milestone |
+| Read-only ack (v1.0) | Reduces PoC scope; write-back deferred | ⚠ Revisit — ack write-back is v1.1 scope |
 | Credit-limit replenishment inside WaitForAlarmNotification | Keeps alarm thread minimal; protocol knowledge stays in driver layer | ✓ Good — alarm thread is simple loop |
 | Separate S7CommPlusConnection for alarm thread | Avoids shared state and PDU interleaving with tag connection | ✓ Good — no threading issues observed |
 | InsertOneAsync + GetAwaiter().GetResult() for alarm writes | Sync-over-async acceptable for low-frequency events in sync thread | ✓ Good — no performance issues |
@@ -74,4 +85,4 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 | Treat WaitForNewS7plusReceived timeout as non-fatal | 5s idle window is normal when no alarms are active | ✓ Good — loop continues correctly |
 
 ---
-*Last updated: 2026-03-18 after v1.0 milestone*
+*Last updated: 2026-03-18 after v1.1 milestone started*
