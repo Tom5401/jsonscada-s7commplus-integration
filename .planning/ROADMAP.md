@@ -34,7 +34,11 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
   1. A fresh unacknowledged alarm appears in MongoDB with `ackState: false`; acknowledging it on the PLC causes the next event to arrive with `ackState: true`
   2. Every new alarm document in `s7plusAlarmEvents` contains an `alarmClassName` string field (e.g., "Acknowledgment required") derived from the numeric alarm class ID
   3. Existing tag read/write and alarm subscription pipeline continue to function without regression after the C# changes
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — DRVR-01: PLCSIM spike + surgical ackState fix (AckTimestamp sentinel confirmed via live trace)
+- [ ] 02-02-PLAN.md — DRVR-02: AlarmClassNames dictionary + alarmClassName BSON field (IDs from Plan 01 trace)
 
 ### Phase 3: Read-Only Alarm Viewer
 **Goal**: An operator can navigate to a dedicated S7Plus Alarms Viewer page in AdminUI that displays alarms with TIA Portal-equivalent columns, auto-refreshes every 5 seconds, and supports filtering — independent of the existing tag-based alarm viewer
@@ -65,6 +69,6 @@ Phases execute in numeric order: 2 → 3 → 4
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1. End-to-End Alarm Pipeline | v1.0 | 2/2 | Complete | 2026-03-18 |
-| 2. Driver Fixes | v1.1 | 0/? | Not started | - |
+| 2. Driver Fixes | v1.1 | 0/2 | Not started | - |
 | 3. Read-Only Alarm Viewer | v1.1 | 0/? | Not started | - |
 | 4. Ack Write-Back | v1.1 | 0/? | Not started | - |
