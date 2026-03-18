@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Alarm Management & Viewer
 status: planning
-stopped_at: Phase 2 context gathered
-last_updated: "2026-03-18T12:20:21.617Z"
+stopped_at: Completed 02-01-PLAN.md — ackState sentinel fix
+last_updated: "2026-03-18T13:10:32.622Z"
 last_activity: 2026-03-18 — Roadmap created
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 2
+  completed_plans: 1
   percent: 0
 ---
 
@@ -44,6 +44,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. End-to-End Alarm Pipeline | 2/2 | — | — |
+| Phase 02-driver-fixes P01 | 45min | 3 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -55,6 +56,8 @@ Recent decisions affecting current work:
 - [v1.1 planning]: ackState spike required before Phase 2 merge — verify correct sentinel against live PLCSIM before committing fix
 - [v1.1 planning]: Wireshark spike is first deliverable of Phase 4 — no ack send code before PDU format is confirmed
 - [v1.1 planning]: AlarmsViewerPage.vue must not be modified — new S7PlusAlarmsViewerPage.vue is fully independent
+- [Phase 02-driver-fixes]: Use DateTime.UnixEpoch as ackState sentinel — confirmed by PLCSIM trace (unacknowledged AckTimestamp = 01/01/1970 00:00:00)
+- [Phase 02-driver-fixes]: AlarmClass 33 observed during trace = Acknowledgment class in TIA Portal
 
 ### Pending Todos
 
@@ -67,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T12:20:21.610Z
-Stopped at: Phase 2 context gathered
-Resume file: .planning/phases/02-driver-fixes/02-CONTEXT.md
+Last session: 2026-03-18T13:10:32.618Z
+Stopped at: Completed 02-01-PLAN.md — ackState sentinel fix
+Resume file: None

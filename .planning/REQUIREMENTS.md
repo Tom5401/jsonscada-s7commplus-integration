@@ -22,7 +22,7 @@
 
 ### Driver & Data
 
-- [ ] **DRVR-01**: MongoDB `ackState` field correctly reflects PLC acknowledgement state — `false` for unacknowledged, `true` for acknowledged
+- [x] **DRVR-01**: MongoDB `ackState` field correctly reflects PLC acknowledgement state — `false` for unacknowledged, `true` for acknowledged
 - [ ] **DRVR-02**: MongoDB alarm documents include a resolved `alarmClassName` string derived from the numeric alarm class ID
 - [ ] **DRVR-03**: Acknowledgement command sent from json-scada is received and applied by the PLC
 
@@ -65,7 +65,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRVR-01 | Phase 2 | Pending |
+| DRVR-01 | Phase 2 | Complete |
 | DRVR-02 | Phase 2 | Pending |
 | DRVR-03 | Phase 4 | Pending |
 | VIEW-01 | Phase 3 | Pending |
