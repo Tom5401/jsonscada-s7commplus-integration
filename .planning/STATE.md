@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Alarm Management & Viewer
-status: planning
-stopped_at: Defining requirements
+status: ready_to_plan
+stopped_at: Roadmap created — ready to plan Phase 2
 last_updated: "2026-03-18T00:00:00.000Z"
-last_activity: 2026-03-18 — Milestone v1.1 started
+last_activity: 2026-03-18 — v1.1 roadmap created (3 phases, 9 requirements mapped)
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -21,14 +21,29 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.1 — defining requirements
+**Current focus:** Phase 2 — Driver Fixes (ackState + alarmClassName)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-18 — Milestone v1.1 started
+Phase: 2 of 4 (Phase 2: Driver Fixes)
+Plan: 0 of ? in current phase
+Status: Ready to plan
+Last activity: 2026-03-18 — Roadmap created
+
+Progress: [░░░░░░░░░░] 0%
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 2 (v1.0)
+- Average duration: —
+- Total execution time: —
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 1. End-to-End Alarm Pipeline | 2/2 | — | — |
 
 ## Accumulated Context
 
@@ -36,16 +51,22 @@ Last activity: 2026-03-18 — Milestone v1.1 started
 
 See PROJECT.md Key Decisions table for full log.
 
+Recent decisions affecting current work:
+- [v1.1 planning]: ackState spike required before Phase 2 merge — verify correct sentinel against live PLCSIM before committing fix
+- [v1.1 planning]: Wireshark spike is first deliverable of Phase 4 — no ack send code before PDU format is confirmed
+- [v1.1 planning]: AlarmsViewerPage.vue must not be modified — new S7PlusAlarmsViewerPage.vue is fully independent
+
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-None.
+- [Phase 2]: ackState correct sentinel (DateTime.MinValue vs AllStatesInfo bit) unconfirmed from static analysis — requires live PLC trace or debugger inspection on unacknowledged alarm
+- [Phase 4]: Alarm ack PDU format undocumented — Wireshark capture of TIA Portal ack command is a hard gate before any Phase 4 implementation begins; malformed PDU can crash alarm subscription thread
 
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Milestone v1.1 started — requirements phase
+Stopped at: v1.1 roadmap created — 3 phases (2, 3, 4), 9/9 requirements mapped
 Resume file: None
