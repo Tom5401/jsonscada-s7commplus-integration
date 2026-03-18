@@ -20,7 +20,7 @@ Full details: [milestones/v1.0-ROADMAP.md](milestones/v1.0-ROADMAP.md)
 
 **Milestone Goal:** Close the ack loop (fix ackState bug + write-back to PLC), enrich alarm data with alarm class names, and add a TIA Portal-style Alarms Viewer in AdminUI with per-row acknowledge capability.
 
-- [ ] **Phase 2: Driver Fixes** - Fix ackState always-true bug and add alarmClassName resolution to MongoDB alarm documents
+- [x] **Phase 2: Driver Fixes** - Fix ackState always-true bug and add alarmClassName resolution to MongoDB alarm documents (completed 2026-03-18)
 - [ ] **Phase 3: Read-Only Alarm Viewer** - REST endpoints + S7PlusAlarmsViewerPage.vue with TIA Portal columns and auto-refresh
 - [ ] **Phase 4: Ack Write-Back** - Wireshark spike + full ack pipeline (Vue → Express → commandsQueue → C# → PLC) + Acknowledge button
 
@@ -69,6 +69,6 @@ Phases execute in numeric order: 2 → 3 → 4
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1. End-to-End Alarm Pipeline | v1.0 | 2/2 | Complete | 2026-03-18 |
-| 2. Driver Fixes | 1/2 | In Progress|  | - |
+| 2. Driver Fixes | 2/2 | Complete   | 2026-03-18 | - |
 | 3. Read-Only Alarm Viewer | v1.1 | 0/? | Not started | - |
 | 4. Ack Write-Back | v1.1 | 0/? | Not started | - |

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Alarm Management & Viewer
 status: planning
-stopped_at: Completed 02-01-PLAN.md — ackState sentinel fix
-last_updated: "2026-03-18T13:10:32.622Z"
+stopped_at: Completed 02-02-PLAN.md Task 1 — alarmClassName field added; awaiting Task 2 PLCSIM verification checkpoint
+last_updated: "2026-03-18T13:16:43.665Z"
 last_activity: 2026-03-18 — Roadmap created
 progress:
   total_phases: 3
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -45,6 +45,7 @@ Progress: [░░░░░░░░░░] 0%
 |-------|-------|-------|----------|
 | 1. End-to-End Alarm Pipeline | 2/2 | — | — |
 | Phase 02-driver-fixes P01 | 45min | 3 tasks | 1 files |
+| Phase 02-driver-fixes P02 | 5min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -58,6 +59,8 @@ Recent decisions affecting current work:
 - [v1.1 planning]: AlarmsViewerPage.vue must not be modified — new S7PlusAlarmsViewerPage.vue is fully independent
 - [Phase 02-driver-fixes]: Use DateTime.UnixEpoch as ackState sentinel — confirmed by PLCSIM trace (unacknowledged AckTimestamp = 01/01/1970 00:00:00)
 - [Phase 02-driver-fixes]: AlarmClass 33 observed during trace = Acknowledgment class in TIA Portal
+- [Phase 02-driver-fixes]: AlarmClass 33 = Acknowledgment required dictionary entry seeded from PLCSIM trace; Unknown (N) fallback covers unmapped IDs
+- [Phase 02-driver-fixes]: TryGetValue ternary pattern for alarmClassName lookup — no null-coalescing, no helper method (per locked CONTEXT.md decision)
 
 ### Pending Todos
 
@@ -70,6 +73,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T13:10:32.618Z
-Stopped at: Completed 02-01-PLAN.md — ackState sentinel fix
+Last session: 2026-03-18T13:16:43.661Z
+Stopped at: Completed 02-02-PLAN.md Task 1 — alarmClassName field added; awaiting Task 2 PLCSIM verification checkpoint
 Resume file: None
