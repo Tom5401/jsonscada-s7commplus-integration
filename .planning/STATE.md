@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Alarm Management & Viewer
 status: planning
-stopped_at: Completed 02-02-PLAN.md Task 1 — alarmClassName field added; awaiting Task 2 PLCSIM verification checkpoint
-last_updated: "2026-03-18T13:16:43.665Z"
+stopped_at: Completed 02-02-PLAN.md — Phase 2 complete, both DRVR-01 and DRVR-02 verified via PLCSIM
+last_updated: "2026-03-18T13:31:21.632Z"
 last_activity: 2026-03-18 — Roadmap created
 progress:
   total_phases: 3
@@ -46,6 +46,7 @@ Progress: [░░░░░░░░░░] 0%
 | 1. End-to-End Alarm Pipeline | 2/2 | — | — |
 | Phase 02-driver-fixes P01 | 45min | 3 tasks | 1 files |
 | Phase 02-driver-fixes P02 | 5min | 1 tasks | 1 files |
+| Phase 02-driver-fixes P02 | 15min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -61,6 +62,7 @@ Recent decisions affecting current work:
 - [Phase 02-driver-fixes]: AlarmClass 33 observed during trace = Acknowledgment class in TIA Portal
 - [Phase 02-driver-fixes]: AlarmClass 33 = Acknowledgment required dictionary entry seeded from PLCSIM trace; Unknown (N) fallback covers unmapped IDs
 - [Phase 02-driver-fixes]: TryGetValue ternary pattern for alarmClassName lookup — no null-coalescing, no helper method (per locked CONTEXT.md decision)
+- [Phase 02-driver-fixes]: ackState true for Going alarms in Acknowledgment Required class is PLC-driven behavior (PLC sets AckTimestamp at Going time) — out of scope, deferred to future work
 
 ### Pending Todos
 
@@ -73,6 +75,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-18T13:16:43.661Z
-Stopped at: Completed 02-02-PLAN.md Task 1 — alarmClassName field added; awaiting Task 2 PLCSIM verification checkpoint
+Last session: 2026-03-18T13:31:21.628Z
+Stopped at: Completed 02-02-PLAN.md — Phase 2 complete, both DRVR-01 and DRVR-02 verified via PLCSIM
 Resume file: None
