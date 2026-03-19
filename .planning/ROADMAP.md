@@ -63,7 +63,11 @@ Plans:
   1. A Wireshark capture of TIA Portal sending an ack command to a live PLC is captured and the `SetVariableRequest` payload (object ID, attribute ID, value encoding) is decoded — this is the first deliverable of this phase; no ack send code is written before this spike is complete
   2. Clicking Acknowledge on an unacknowledged alarm row in the viewer sends a POST request; the PLC receives and applies the ack command; the alarm document in MongoDB is subsequently updated with `ackState: true`
   3. The Acknowledge button is enabled only for rows with `ackState: false`; it shows a pending state after click and prevents duplicate sends until the round-trip confirms acknowledgement
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Wireshark spike: capture and decode alarm ack PDU format, prototype C# method
+- [ ] 04-02-PLAN.md — Full ack pipeline: Express endpoint + C# ack branch + Vue Ack button with pending state
 
 ## Progress
 
@@ -75,4 +79,4 @@ Phases execute in numeric order: 2 → 3 → 4
 | 1. End-to-End Alarm Pipeline | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 2. Driver Fixes | 2/2 | Complete   | 2026-03-18 | - |
 | 3. Read-Only Alarm Viewer | 2/2 | Complete   | 2026-03-19 | - |
-| 4. Ack Write-Back | v1.1 | 0/? | Not started | - |
+| 4. Ack Write-Back | v1.1 | 0/2 | Not started | - |
