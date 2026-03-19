@@ -49,7 +49,11 @@ Plans:
   2. The viewer displays alarms in a table with columns: Source, Date, Time, Status, Acknowledge, Alarm class name, Event text, ID, Additional text 1–3
   3. The alarm table refreshes automatically every 5 seconds — a new alarm triggered on the PLC appears in the viewer within one refresh cycle without a manual page reload
   4. The operator can filter the displayed alarms by status (Incoming / Outgoing / All) and by alarm class, with the table updating to show only matching rows
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Backend endpoint + S7PlusAlarmsViewerPage.vue component (table, filters, auto-refresh)
+- [ ] 03-02-PLAN.md — AdminUI wiring: route registration, Dashboard tile, i18n keys (13 locales)
 
 ### Phase 4: Ack Write-Back
 **Goal**: An operator can acknowledge an unacknowledged alarm from the viewer and the PLC receives and applies the acknowledgement command — closing the full ack loop from UI to PLC
@@ -70,5 +74,5 @@ Phases execute in numeric order: 2 → 3 → 4
 |-------|-----------|----------------|--------|-----------|
 | 1. End-to-End Alarm Pipeline | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 2. Driver Fixes | 2/2 | Complete   | 2026-03-18 | - |
-| 3. Read-Only Alarm Viewer | v1.1 | 0/? | Not started | - |
+| 3. Read-Only Alarm Viewer | v1.1 | 0/2 | Planning complete | - |
 | 4. Ack Write-Back | v1.1 | 0/? | Not started | - |
