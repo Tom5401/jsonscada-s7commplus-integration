@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Alarm Management & Viewer
 status: planning
-stopped_at: Completed 04-ack-write-back 04-01-PLAN.md
-last_updated: "2026-03-19T10:09:25.018Z"
+stopped_at: "Checkpoint 04-02 Task 3: human-verify end-to-end ack round-trip"
+last_updated: "2026-03-19T15:09:36.303Z"
 last_activity: 2026-03-18 — Roadmap created
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 6
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -51,6 +51,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-read-only-alarm-viewer P02 | 6min | 1 tasks | 15 files |
 | Phase 03-read-only-alarm-viewer P02 | 6min | 2 tasks | 15 files |
 | Phase 04-ack-write-back P01 | 35min | 2 tasks | 1 files |
+| Phase 04-ack-write-back P02 | 20min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +75,7 @@ Recent decisions affecting current work:
 - [Phase 03-read-only-alarm-viewer]: AlertTriangle icon chosen to differentiate S7Plus tile from existing Bell-icon Alarms Viewer tile
 - [Phase 04-ack-write-back]: Alarm ack uses CreateObjectRequest (not SetVariableRequest) — confirmed by AckJob DynObjX7 dynamic RelId in notification response
 - [Phase 04-ack-write-back]: Prototype SendAlarmAck() marked unverified — PLCSIM test run is the next hard gate before Plan 02 wiring
+- [Phase 04-ack-write-back]: SendAlarmAck called as instance method on S7CommPlusConnection (srv.connection.SendAlarmAck) — AlarmAck.cs from spike verification, not a static helper in MongoCommands
 
 ### Pending Todos
 
@@ -86,6 +88,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T10:09:25.014Z
-Stopped at: Completed 04-ack-write-back 04-01-PLAN.md
+Last session: 2026-03-19T15:09:25.386Z
+Stopped at: Checkpoint 04-02 Task 3: human-verify end-to-end ack round-trip
 Resume file: None
