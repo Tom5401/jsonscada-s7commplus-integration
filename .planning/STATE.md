@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: — Alarm Management & Viewer
 status: planning
-stopped_at: Phase 4 context gathered
-last_updated: "2026-03-19T08:43:20.506Z"
+stopped_at: Completed 04-ack-write-back 04-01-PLAN.md
+last_updated: "2026-03-19T10:09:25.018Z"
 last_activity: 2026-03-18 — Roadmap created
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 6
+  completed_plans: 5
   percent: 0
 ---
 
@@ -50,6 +50,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 03-read-only-alarm-viewer P01 | 2min | 2 tasks | 2 files |
 | Phase 03-read-only-alarm-viewer P02 | 6min | 1 tasks | 15 files |
 | Phase 03-read-only-alarm-viewer P02 | 6min | 2 tasks | 15 files |
+| Phase 04-ack-write-back P01 | 35min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -71,6 +72,8 @@ Recent decisions affecting current work:
 - [Phase 03-read-only-alarm-viewer]: Array.isArray(json) guard in fetchAlarms prevents error response objects from overwriting alarms ref
 - [Phase 03-read-only-alarm-viewer]: S7Plus tile uses no page/target keys — internal SPA route only; absence of page key prevents external-link button rendering in template
 - [Phase 03-read-only-alarm-viewer]: AlertTriangle icon chosen to differentiate S7Plus tile from existing Bell-icon Alarms Viewer tile
+- [Phase 04-ack-write-back]: Alarm ack uses CreateObjectRequest (not SetVariableRequest) — confirmed by AckJob DynObjX7 dynamic RelId in notification response
+- [Phase 04-ack-write-back]: Prototype SendAlarmAck() marked unverified — PLCSIM test run is the next hard gate before Plan 02 wiring
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-19T08:43:20.492Z
-Stopped at: Phase 4 context gathered
-Resume file: .planning/phases/04-ack-write-back/04-CONTEXT.md
+Last session: 2026-03-19T10:09:25.014Z
+Stopped at: Completed 04-ack-write-back 04-01-PLAN.md
+Resume file: None

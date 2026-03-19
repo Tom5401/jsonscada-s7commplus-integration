@@ -79,4 +79,4 @@ Phases execute in numeric order: 2 → 3 → 4
 | 1. End-to-End Alarm Pipeline | v1.0 | 2/2 | Complete | 2026-03-18 |
 | 2. Driver Fixes | 2/2 | Complete   | 2026-03-18 | - |
 | 3. Read-Only Alarm Viewer | 2/2 | Complete   | 2026-03-19 | - |
-| 4. Ack Write-Back | v1.1 | 0/2 | Not started | - |
+| 4. Ack Write-Back | 1/2 | In Progress|  | - |
