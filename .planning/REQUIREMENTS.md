@@ -28,12 +28,12 @@
 
 ### Alarm Viewer
 
-- [ ] **VIEW-01**: User can navigate to a dedicated S7Plus Alarms Viewer page in AdminUI, separate from the existing tag-based alarm viewer
-- [ ] **VIEW-02**: Alarm viewer displays TIA Portal-equivalent columns — Source, Date, Time, Status, Acknowledge, Alarm class name, Event text, ID, Additional texts 1–3
+- [x] **VIEW-01**: User can navigate to a dedicated S7Plus Alarms Viewer page in AdminUI, separate from the existing tag-based alarm viewer
+- [x] **VIEW-02**: Alarm viewer displays TIA Portal-equivalent columns — Source, Date, Time, Status, Acknowledge, Alarm class name, Event text, ID, Additional texts 1–3
 - [ ] **VIEW-03**: User can acknowledge an unacknowledged alarm from the viewer
-- [ ] **VIEW-04**: Alarm viewer automatically refreshes to show new alarms without manual page reload
-- [ ] **VIEW-05**: User can filter displayed alarms by status (Incoming / Outgoing / All)
-- [ ] **VIEW-06**: User can filter displayed alarms by alarm class
+- [x] **VIEW-04**: Alarm viewer automatically refreshes to show new alarms without manual page reload
+- [x] **VIEW-05**: User can filter displayed alarms by status (Incoming / Outgoing / All)
+- [x] **VIEW-06**: User can filter displayed alarms by alarm class
 
 ## Future Requirements
 
@@ -68,12 +68,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DRVR-01 | Phase 2 | Complete |
 | DRVR-02 | Phase 2 | Complete |
 | DRVR-03 | Phase 4 | Pending |
-| VIEW-01 | Phase 3 | Pending |
-| VIEW-02 | Phase 3 | Pending |
+| VIEW-01 | Phase 3 | Complete |
+| VIEW-02 | Phase 3 | Complete |
 | VIEW-03 | Phase 4 | Pending |
-| VIEW-04 | Phase 3 | Pending |
-| VIEW-05 | Phase 3 | Pending |
-| VIEW-06 | Phase 3 | Pending |
+| VIEW-04 | Phase 3 | Complete |
+| VIEW-05 | Phase 3 | Complete |
+| VIEW-06 | Phase 3 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 9 total
