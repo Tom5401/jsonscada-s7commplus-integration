@@ -1,17 +1,17 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.2
-milestone_name: (not yet defined)
-status: milestone_complete
-stopped_at: "v1.1 milestone archived"
+milestone_name: Alarm Origin & Cleanup
+status: defining_requirements
+stopped_at: "Milestone v1.2 started"
 last_updated: "2026-03-23T00:00:00.000Z"
-last_activity: 2026-03-23 — v1.1 milestone complete
+last_activity: 2026-03-23 — Milestone v1.2 started
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
-  percent: 100
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -25,8 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-23)
 
 ## Current Position
 
-Milestone: v1.1 — SHIPPED 2026-03-23
-All 4 phases complete (8/8 plans).
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-23 — Milestone v1.2 started
 
 ## Performance Metrics
 

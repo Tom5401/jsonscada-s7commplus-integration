@@ -6,6 +6,16 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.1 — Full alarm management loop validated live with PLCSIM Advanced V8 + TIA Portal v21 on 2026-03-19. Tag read/write continues in parallel.
 
+## Current Milestone: v1.2 Alarm Origin & Cleanup
+
+**Goal:** Enrich alarm events with PLC origin (DB/FB name) resolved from a live relationID lookup at driver startup, and give operators the ability to delete alarm history from the viewer.
+
+**Target features:**
+- Per-row Delete and Bulk "Delete Filtered" in S7PlusAlarmsViewerPage
+- RelationID stored in s7plusAlarmEvents MongoDB documents
+- Driver queries PLC at startup to map relationID → DB/FB Name
+- DB/FB Name column(s) added to alarm viewer table
+
 ## Core Value
 
 Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values), so operators see real events the moment they occur.
@@ -35,7 +45,12 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ### Active
 
-*(none — define with `/gsd:new-milestone`)*
+- [ ] Store relationID in s7plusAlarmEvents MongoDB documents
+- [ ] Driver queries PLC at startup to build relationID → DB/FB Name map
+- [ ] DB Name (and FB Name if available) returned by alarm list API
+- [ ] Alarm viewer displays DB/FB origin as new column(s)
+- [ ] Per-row Delete button in alarm viewer (mirrors Ack button)
+- [ ] Bulk "Delete Filtered" button removes all currently visible rows immediately
 
 ### Out of Scope
 
@@ -89,4 +104,22 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 | PendingAcks ConcurrentQueue for ack dispatch | AlarmThread dequeues and sends ack; MongoCommands awaits TaskCompletionSource; no dedicated third connection | ✓ Good — clean architecture |
 
 ---
-*Last updated: 2026-03-23 after v1.1 milestone*
+## Evolution
+
+This document evolves at phase transitions and milestone boundaries.
+
+**After each phase transition** (via `/gsd:transition`):
+1. Requirements invalidated? → Move to Out of Scope with reason
+2. Requirements validated? → Move to Validated with phase reference
+3. New requirements emerged? → Add to Active
+4. Decisions to log? → Add to Key Decisions
+5. "What This Is" still accurate? → Update if drifted
+
+**After each milestone** (via `/gsd:complete-milestone`):
+1. Full review of all sections
+2. Core Value check — still the right priority?
+3. Audit Out of Scope — reasons still valid?
+4. Update Context with current state
+
+---
+*Last updated: 2026-03-23 — v1.2 milestone started*
