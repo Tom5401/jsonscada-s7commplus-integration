@@ -64,7 +64,10 @@ Plans:
   2. A newly triggered alarm event document contains an `originDbName` field; when the DB is in the PLC browse, the value matches the TIA Portal datablock name (e.g., `"AlarmDB"`)
   3. When the startup browse fails or returns no blocks, the driver continues without error and new alarm documents contain `originDbName: ""`
   4. Browse runs on `srv.connection` (tag connection), not `alarmConn`; no PDU interleaving observed
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 06-01-PLAN.md — Add RelationIdNameMap field, browse call, and originDbName document field
 
 ---
 
@@ -105,6 +108,6 @@ Plans:
 | 3. Read-Only Alarm Viewer | v1.1 | 2/2 | Complete | 2026-03-19 |
 | 4. Ack Write-Back | v1.1 | 2/2 | Complete | 2026-03-19 |
 | 5. Driver — RelationId Fields | v1.2 | 0/1 | Planned    |  |
-| 6. Driver — Startup DB Name Map | v1.2 | 0/? | Not started | - |
+| 6. Driver — Startup DB Name Map | v1.2 | 0/1 | Planned | - |
 | 7. Backend — Delete Endpoint + _id Exposure | v1.2 | 0/? | Not started | - |
 | 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 0/? | Not started | - |
