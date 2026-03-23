@@ -45,17 +45,17 @@
 
 | REQ-ID | Phase | Plan |
 |--------|-------|------|
-| ORIGIN-01 | — | — |
-| ORIGIN-02 | — | — |
-| ORIGIN-03 | — | — |
-| ORIGIN-04 | — | — |
-| ORIGIN-05 | — | — |
-| ORIGIN-06 | — | — |
-| ORIGIN-07 | — | — |
-| ORIGIN-08 | — | — |
-| DELETE-01 | — | — |
-| DELETE-02 | — | — |
-| DELETE-03 | — | — |
-| DELETE-04 | — | — |
-| DELETE-05 | — | — |
-| DELETE-06 | — | — |
+| ORIGIN-01 | Phase 5 | — |
+| ORIGIN-02 | Phase 5 | — |
+| ORIGIN-03 | Phase 6 | — |
+| ORIGIN-04 | Phase 6 | — |
+| ORIGIN-05 | Phase 7 | — |
+| ORIGIN-06 | Phase 8 | — |
+| ORIGIN-07 | Phase 8 | — |
+| ORIGIN-08 | Phase 8 | — |
+| DELETE-01 | Phase 7 | — |
+| DELETE-02 | Phase 7 | — |
+| DELETE-03 | Phase 7 | — |
+| DELETE-04 | Phase 8 | — |
+| DELETE-05 | Phase 8 | — |
+| DELETE-06 | Phase 8 | — |
