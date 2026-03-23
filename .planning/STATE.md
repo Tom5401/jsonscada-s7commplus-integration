@@ -1,17 +1,15 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Alarm Origin & Cleanup
-status: roadmap_ready
-stopped_at: "Roadmap created — ready for Phase 5 planning"
-last_updated: "2026-03-23T00:00:00.000Z"
-last_activity: 2026-03-23 — v1.2 roadmap created (Phases 5–8)
+milestone: v1.0
+milestone_name: milestone
+status: Ready to plan
+stopped_at: Completed 05-driver-relationid-fields/05-01-PLAN.md
+last_updated: "2026-03-23T12:27:27.600Z"
 progress:
   total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # Project State
@@ -21,18 +19,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.2 — Alarm Origin & Cleanup — roadmap defined, ready for Phase 5
+**Current focus:** Phase 05 — driver-relationid-fields
 
 ## Current Position
 
-Phase: Phase 5 — Driver RelationId Fields (not started)
-Plan: —
-Status: Roadmap ready — awaiting `/gsd:plan-phase 5`
-Last activity: 2026-03-23 — v1.2 roadmap created
+Phase: 6
+Plan: Not started
 
 ## Performance Metrics
 
 **Velocity:**
+
 - v1.0: 2 plans, 2 days
 - v1.1: 6 plans, 2 days (2026-03-18 → 2026-03-19)
 
@@ -48,12 +45,16 @@ Last activity: 2026-03-23 — v1.2 roadmap created
 | 6. Driver — Startup DB Name Map | 0/? | - |
 | 7. Backend — Delete Endpoint + _id Exposure | 0/? | - |
 | 8. Frontend — Delete Buttons + Origin Columns | 0/? | - |
+| Phase 05-driver-relationid-fields P01 | 10 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
 ### Decisions
 
 See PROJECT.md Key Decisions table for full log.
+
+- [Phase 05-driver-relationid-fields]: Store relationId as BsonInt64 — PLC values may exceed Int32.MaxValue (e.g. 0x8a0e0005 = 2,317,140,997)
+- [Phase 05-driver-relationid-fields]: dbNumber = lower 16 bits of relationId (& 0xFFFF) not upper bits (>> 16) — confirmed by S7CommPlusConnection.cs:1247
 
 ### Pending Todos
 
@@ -65,7 +66,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23
-Stopped at: v1.2 roadmap created — Phases 5–8 defined
+Last session: 2026-03-23T12:06:11.480Z
+Stopped at: Completed 05-driver-relationid-fields/05-01-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 5`
