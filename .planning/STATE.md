@@ -1,57 +1,47 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.1
-milestone_name: — Alarm Management & Viewer
-status: planning
-stopped_at: "Checkpoint 04-02 Task 3: human-verify end-to-end ack round-trip"
-last_updated: "2026-03-19T15:09:36.303Z"
-last_activity: 2026-03-18 — Roadmap created
+milestone: v1.2
+milestone_name: (not yet defined)
+status: milestone_complete
+stopped_at: "v1.1 milestone archived"
+last_updated: "2026-03-23T00:00:00.000Z"
+last_activity: 2026-03-23 — v1.1 milestone complete
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 6
-  completed_plans: 6
-  percent: 0
+  total_phases: 4
+  completed_phases: 4
+  total_plans: 8
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-18)
+See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** Phase 2 — Driver Fixes (ackState + alarmClassName)
+**Current focus:** v1.1 shipped — run `/gsd:new-milestone` to define v1.2
 
 ## Current Position
 
-Phase: 2 of 4 (Phase 2: Driver Fixes)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-03-18 — Roadmap created
-
-Progress: [░░░░░░░░░░] 0%
+Milestone: v1.1 — SHIPPED 2026-03-23
+All 4 phases complete (8/8 plans).
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2 (v1.0)
-- Average duration: —
-- Total execution time: —
+- v1.0: 2 plans, 2 days
+- v1.1: 6 plans, 2 days (2026-03-18 → 2026-03-19)
 
 **By Phase:**
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 1. End-to-End Alarm Pipeline | 2/2 | — | — |
-| Phase 02-driver-fixes P01 | 45min | 3 tasks | 1 files |
-| Phase 02-driver-fixes P02 | 5min | 1 tasks | 1 files |
-| Phase 02-driver-fixes P02 | 15min | 2 tasks | 1 files |
-| Phase 03-read-only-alarm-viewer P01 | 2min | 2 tasks | 2 files |
-| Phase 03-read-only-alarm-viewer P02 | 6min | 1 tasks | 15 files |
-| Phase 03-read-only-alarm-viewer P02 | 6min | 2 tasks | 15 files |
-| Phase 04-ack-write-back P01 | 35min | 2 tasks | 1 files |
-| Phase 04-ack-write-back P02 | 20min | 2 tasks | 3 files |
+| Phase | Plans | Duration |
+|-------|-------|----------|
+| 1. End-to-End Alarm Pipeline | 2/2 | 2 days |
+| 2. Driver Fixes | 2/2 | ~1 hour |
+| 3. Read-Only Alarm Viewer | 2/2 | ~8 min |
+| 4. Ack Write-Back | 2/2 | ~55 min |
 
 ## Accumulated Context
 
@@ -59,35 +49,16 @@ Progress: [░░░░░░░░░░] 0%
 
 See PROJECT.md Key Decisions table for full log.
 
-Recent decisions affecting current work:
-- [v1.1 planning]: ackState spike required before Phase 2 merge — verify correct sentinel against live PLCSIM before committing fix
-- [v1.1 planning]: Wireshark spike is first deliverable of Phase 4 — no ack send code before PDU format is confirmed
-- [v1.1 planning]: AlarmsViewerPage.vue must not be modified — new S7PlusAlarmsViewerPage.vue is fully independent
-- [Phase 02-driver-fixes]: Use DateTime.UnixEpoch as ackState sentinel — confirmed by PLCSIM trace (unacknowledged AckTimestamp = 01/01/1970 00:00:00)
-- [Phase 02-driver-fixes]: AlarmClass 33 observed during trace = Acknowledgment class in TIA Portal
-- [Phase 02-driver-fixes]: AlarmClass 33 = Acknowledgment required dictionary entry seeded from PLCSIM trace; Unknown (N) fallback covers unmapped IDs
-- [Phase 02-driver-fixes]: TryGetValue ternary pattern for alarmClassName lookup — no null-coalescing, no helper method (per locked CONTEXT.md decision)
-- [Phase 02-driver-fixes]: ackState true for Going alarms in Acknowledgment Required class is PLC-driven behavior (PLC sets AckTimestamp at Going time) — out of scope, deferred to future work
-- [Phase 03-read-only-alarm-viewer]: listS7PlusAlarms endpoint inserted inline in index.js AUTHENTICATION block to use module-level db handle directly
-- [Phase 03-read-only-alarm-viewer]: projection: { _id: 0 } used on s7plusAlarmEvents query to prevent BSON ObjectId serialization issues
-- [Phase 03-read-only-alarm-viewer]: Array.isArray(json) guard in fetchAlarms prevents error response objects from overwriting alarms ref
-- [Phase 03-read-only-alarm-viewer]: S7Plus tile uses no page/target keys — internal SPA route only; absence of page key prevents external-link button rendering in template
-- [Phase 03-read-only-alarm-viewer]: AlertTriangle icon chosen to differentiate S7Plus tile from existing Bell-icon Alarms Viewer tile
-- [Phase 04-ack-write-back]: Alarm ack uses CreateObjectRequest (not SetVariableRequest) — confirmed by AckJob DynObjX7 dynamic RelId in notification response
-- [Phase 04-ack-write-back]: Prototype SendAlarmAck() marked unverified — PLCSIM test run is the next hard gate before Plan 02 wiring
-- [Phase 04-ack-write-back]: SendAlarmAck called as instance method on S7CommPlusConnection (srv.connection.SendAlarmAck) — AlarmAck.cs from spike verification, not a static helper in MongoCommands
-
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-- [Phase 2]: ackState correct sentinel (DateTime.MinValue vs AllStatesInfo bit) unconfirmed from static analysis — requires live PLC trace or debugger inspection on unacknowledged alarm
-- [Phase 4]: Alarm ack PDU format undocumented — Wireshark capture of TIA Portal ack command is a hard gate before any Phase 4 implementation begins; malformed PDU can crash alarm subscription thread
+None — v1.1 complete. Tech debt tracked in PROJECT.md Context section.
 
 ## Session Continuity
 
-Last session: 2026-03-19T15:09:25.386Z
-Stopped at: Checkpoint 04-02 Task 3: human-verify end-to-end ack round-trip
+Last session: 2026-03-23
+Stopped at: v1.1 milestone archived
 Resume file: None

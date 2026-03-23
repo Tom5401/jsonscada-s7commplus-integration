@@ -1,5 +1,21 @@
 # Milestones
 
+## v1.1 — Alarm Management & Viewer (Shipped: 2026-03-23)
+
+**Phases:** 2–4 | **Plans:** 6 | **Timeline:** 2026-03-18 → 2026-03-19 (2 days)
+**Archive:** [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
+
+**Delivered:** Full alarm management loop — fixed ackState bug, added alarm class names, TIA Portal-style viewer in AdminUI with per-row acknowledge capability wired to PLC.
+
+**Key accomplishments:**
+- Fixed ackState always-true bug (DateTime.UnixEpoch sentinel confirmed via live PLCSIM trace)
+- Added alarmClassName field to MongoDB alarm documents (AlarmClass 33 = "Acknowledgment required"; Unknown (N) fallback)
+- S7PlusAlarmsViewerPage.vue — 11-column TIA Portal-equivalent table with 5s auto-refresh and status/class filters; i18n across 13 locales
+- Full ack pipeline: Vue Ack button → POST /ackS7PlusAlarm → commandsQueue → C# AlarmThread.SendAlarmAck via alarmConn → PLC → ackState updated in MongoDB
+- AckJob PDU decoded via Wireshark spike (CreateObjectRequest with 13 numeric IDs from s7comm_plus.dll)
+
+---
+
 ## v1.0 — S7CommPlus Alarm Subscriptions PoC (Shipped: 2026-03-18)
 
 **Phases:** 1 | **Plans:** 2 | **Timeline:** 2026-03-16 → 2026-03-18 (3 days)
