@@ -8,10 +8,10 @@
 
 ### ORIGIN — Alarm Origin Enrichment
 
-- [ ] **ORIGIN-01**: Driver stores `relationId` (BsonInt64) in each new `s7plusAlarmEvents` document
-- [ ] **ORIGIN-02**: Driver stores `dbNumber` (uint extracted from `relationId >> 16 & 0xFFFF`) in each new alarm document
-- [ ] **ORIGIN-03**: Driver builds a `RelationIdNameMap` (`Dictionary<uint, string>`) at startup via `GetListOfDatablocks` on the tag connection, before alarm subscription starts; browse failure produces an empty map without blocking alarm subscription
-- [ ] **ORIGIN-04**: Driver stores `originDbName` (string, resolved from `RelationIdNameMap`; empty string if not found) in each new alarm document at write time
+- [x] **ORIGIN-01**: Driver stores `relationId` (BsonInt64) in each new `s7plusAlarmEvents` document
+- [x] **ORIGIN-02**: Driver stores `dbNumber` (uint extracted from `relationId >> 16 & 0xFFFF`) in each new alarm document
+- [x] **ORIGIN-03**: Driver builds a `RelationIdNameMap` (`Dictionary<uint, string>`) at startup via `GetListOfDatablocks` on the tag connection, before alarm subscription starts; browse failure produces an empty map without blocking alarm subscription
+- [x] **ORIGIN-04**: Driver stores `originDbName` (string, resolved from `RelationIdNameMap`; empty string if not found) in each new alarm document at write time
 - [ ] **ORIGIN-05**: `listS7PlusAlarms` API returns `relationId`, `dbNumber`, and `originDbName` fields per document
 - [ ] **ORIGIN-06**: Alarm viewer displays Origin DB Name as a new column
 - [ ] **ORIGIN-07**: Alarm viewer displays DB Number as a new column
