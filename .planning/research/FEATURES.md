@@ -1,179 +1,206 @@
 # Feature Research
 
-**Domain:** S7CommPlus alarm ack write-back, alarm class name resolution, Vue 3 SCADA alarm viewer
-**Researched:** 2026-03-18
-**Confidence:** HIGH (derived directly from protocol source code, v1.0 codebase, and TIA Portal alarm viewer reference)
+**Domain:** S7CommPlus alarm origin enrichment + alarm history management (v1.2)
+**Researched:** 2026-03-23
+**Confidence:** HIGH — all findings derived directly from the live codebase and protocol source
 
 ---
 
-## Existing v1.0 Data (Already in MongoDB `s7plusAlarmEvents`)
+## Context: What Exists (v1.1 Baseline)
 
-These fields are already stored in v1.0. They are the raw material for the viewer:
+Already shipped. Not in scope for this milestone but required as dependencies:
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `cpuAlarmId` | string | Unique alarm identity |
-| `alarmState` | string | "coming" / "going" |
-| `plcTimestamp` | DateTime | PLC-side event time |
-| `serverTimestamp` | DateTime | Driver-receive time |
-| `alarmText` | string | Primary alarm message |
-| `additionalTexts` | string[] | SD_1–SD_9 resolved texts |
-| `ackState` | bool | **BUG: always true** — fix is v1.1 scope |
-| `ackTimestamp` | DateTime | PLC-side ack time |
-| `alarmClass` | int | Numeric class ID — name resolution is v1.1 scope |
-| `alarmDomain` | int | 1=System, 2=Security, 256–272=UserClass_0..16 |
-| `priority` | byte | TIA Portal alarm priority |
-| `associatedValues` | object[] | SD_1–SD_10 typed process values |
-| `connectionName` | string | PLC connection identifier |
+- `AlarmThread.cs` receives `Notification` PDUs, calls `AlarmsDai.FromNotificationObject()`, writes `BsonDocument` to `s7plusAlarmEvents` MongoDB collection.
+- `BuildAlarmDocument()` stores 15 fields per document. `cpuAlarmId` is stored as a string (`dai.CpuAlarmId.ToString()`).
+- `S7PlusAlarmsViewerPage.vue` has 11 columns. Ack button per row. 5s auto-refresh. Status and alarm class filters.
+- Backend: `GET /Invoke/auth/listS7PlusAlarms` (returns last 200, sorted `createdAt` desc, projects `{ _id: 0 }`) and `POST /Invoke/auth/ackS7PlusAlarm`.
 
 ---
 
-## Feature Landscape — v1.1
+## Domain Answers (Research Questions)
 
-### Table Stakes (Must Have)
+### 1. How do SCADA systems show alarm origin?
+
+Standard practice in industrial HMI/SCADA (TIA Portal WinCC, Intouch, Ignition):
+
+- **DB name** is the primary identifier operators recognize. It matches the name visible in TIA Portal (e.g. `"MotorControl_DB"`, `"SafetyFB_DB3"`). Displayed in a dedicated "Origin" or "Source Block" column.
+- **DB number** (e.g. `DB5`) is secondary context, useful for cross-referencing hardware documentation. Low value on its own.
+- **FB type name** (the backing FB type if the DB is an instance DB) is engineering-level detail. Operators do not use it. Not needed.
+- **Symbolic variable path** within the DB (e.g. `MotorDB.AlarmBit_1`) is not available from alarm notification metadata alone. Matching `Alid` to variables would require a full DB browse. Out of scope.
+
+**Recommendation:** Single "Origin DB" column showing `db_name` (symbolic name from TIA Portal). `db_number` as optional secondary. No FB type needed.
+
+### 2. What does RelationID represent in the alarm notification PDU?
+
+Confirmed from `BrowseAlarms.cs` and `AlarmThread.cs`:
+
+- `cpuAlarmId = (ulong)RelationId << 32 | (ulong)Alid << 16`
+- The upper 32 bits of `cpuAlarmId` IS the `RelationId`.
+- `RelationId` structure: upper 16 bits = area code (`0x8a0e` for user data blocks), lower 16 bits = DB number.
+- One `RelationId` per DB instance. Multiple alarm definitions within the same DB share the same `RelationId` — distinguished by `Alid` in bits 16–31.
+- **Stability:** Stable for the life of the PLC program. Changes only if the DB is deleted and recreated (e.g. after a full program download), which reassigns the RID. For a PoC targeting a fixed PLC program, the map built at startup is valid for the entire session.
+- `RelationId` is NOT per-alarm-class. It is per-DB-instance.
+
+**Implication for storage:** `relationId` can be extracted from `cpuAlarmId` at any time (`(uint)(cpuAlarmId >> 32)`), so storing it explicitly is optional. However, explicit storage makes the MongoDB field trivially queryable without bit arithmetic in JavaScript.
+
+### 3. How does GetListOfDatablocks work?
+
+Confirmed from `S7CommPlusConnection.cs` (lines 1191–1314). The method already exists and is proven in `S7CommPlusGUIBrowser`.
+
+**What it does:**
+1. Sends `ExploreRequest` for `Ids.NativeObjects_thePLCProgram_Rid`, filtered by `Ids.DB_Class_Rid` (instance-of filter), requesting `Ids.ObjectVariableTypeName` per object.
+2. Parses response: each DB object yields `RelationId` = `db_block_relid` and symbolic name = `db_name`.
+3. Second pass: reads `LID=1` from each `db_block_relid` to get `db_block_ti_relid` (TypeInfo RID — only needed for variable browse, NOT needed for origin lookup).
+4. Returns `List<DatablockInfo>`: `db_name` (string), `db_number` (uint = lower 16 bits of relid), `db_block_relid` (uint = RelationId).
+5. DBs only in load memory get `db_block_ti_relid = 0` and are excluded. Alarm DBs must be in work memory to fire alarms — this exclusion does not affect the origin map.
+
+**Mapping:** `RelationId → db_name` is a direct lookup. The key in the map is `db_block_relid`, which equals `(uint)(cpuAlarmId >> 32)`.
+
+**Cost:** Two network round-trips (one ExploreRequest + one ReadValues batch). Adds ~100–500ms to startup. Acceptable.
+
+**Limitation:** The `db_block_ti_relid` lookup (second pass, `ReadValues`) is unnecessary for origin mapping. The method can be used as-is, or a lighter single-pass variant can be added. Using it as-is avoids new code in the driver library.
+
+### 4. Delete alarm history UX patterns
+
+Standard SCADA alarm log management patterns (TIA Portal WinCC, Ignition, Wonderware):
+
+- **Per-row delete** is uncommon in traditional SCADA (audit trail concerns), but for a PoC engineering log it is practical and expected. Mirrors the per-row Ack button already present.
+- **Bulk delete** with "clear visible" (delete all currently filtered rows) is a standard pattern in log viewers. The current filter state defines the scope.
+- **No soft-delete:** A PoC has no audit trail requirement. Hard `deleteOne` / `deleteMany` from MongoDB is correct.
+- **No confirmation modal on per-row delete:** Adds friction in a dense table. A single click is sufficient. Button label "Delete" is unambiguous.
+- **Bulk delete** should have a distinct visual indicator showing row count (e.g. "Delete Filtered (12)") to avoid accidental mass deletion. No blocking modal needed for a PoC.
+
+---
+
+## Feature Landscape
+
+### Table Stakes (Users Expect These)
+
+Features the v1.2 milestone explicitly requires. Missing any of these makes the milestone incomplete.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Fix `ackState` always-true bug | Core data correctness — ackState is meaningless if always true; blocks all ack-related features | LOW-MEDIUM | Requires live trace to verify correct sentinel for "unacknowledged" state |
-| Alarm class name field (`alarmClassName`) | Operators cannot interpret a raw number; TIA Portal shows names like "8_Logging", "4_UrgentOnderhoud" | LOW | Static `Dictionary<ushort, string>` for protocol-fixed IDs; add `alarmClassName` string field to MongoDB document |
-| New S7Plus Alarms Viewer page in AdminUI | Give operators a TIA Portal-style alarm view — the entire point of the data pipeline | MEDIUM | `S7PlusAlarmsViewerPage.vue` — Vue 3 + Vuetify 3, separate route `/s7plus-alarms`, zero impact on existing `AlarmsViewerPage.vue` |
-| TIA Portal-style columns in viewer | Familiar to operators who use TIA Portal; matches the reference screenshot | LOW | Source, Date, Time, Status, Acknowledge, Alarm class name, Event text, ID, Additional text 1–3 |
-| Acknowledge button in viewer | Operators need to ack alarms from the SCADA UI | MEDIUM | Button enabled only for unacknowledged alarms; sends command to PLC via ack write-back pipeline |
+| Store `relationId` in `s7plusAlarmEvents` documents | Foundation for origin lookup; without it the Vue viewer cannot show DB name without per-alarm client-side computation | LOW | Computed in `BuildAlarmDocument`: `(uint)(dai.CpuAlarmId >> 32)`. Zero protocol changes. |
+| Build `relationId → db_name` map at AlarmThread startup | Origin display is impossible without the name map; map is stable for the session | MEDIUM | Calls existing `conn.GetListOfDatablocks()` on the alarm connection before `AlarmSubscriptionCreate()`. Stores result as `Dictionary<uint, string>` on `S7CP_connection` (or passed into AlarmThread). |
+| Store `originDbName` in `s7plusAlarmEvents` documents | Operators need the DB name in every alarm record; avoids a client-side lookup on every row render | LOW | Map lookup by `relationId` at `BuildAlarmDocument` time. Falls back to `"DB" + db_number` (derivable from `relationId & 0xFFFF`) if not in map. |
+| "Origin DB" column in `S7PlusAlarmsViewerPage.vue` | Operators need to see which DB produced each alarm | LOW | Add one entry to `headers` array. Render `item.originDbName`. No new filter required for MVP. |
+| Include `_id` in `listS7PlusAlarms` response | Per-row delete requires a stable document identifier; current projection excludes `_id` | LOW | Change `{ _id: 0 }` to `{}` in the `find` projection, or explicitly include `{ _id: 1 }`. Convert ObjectId to string for JSON transport. |
+| `DELETE /Invoke/auth/deleteS7PlusAlarm` endpoint | Backend must remove a single document by `_id` | LOW | `db.collection('s7plusAlarmEvents').deleteOne({ _id: new ObjectId(id) })`. Auth guard matches existing pattern. |
+| Per-row Delete button in `S7PlusAlarmsViewerPage.vue` | Operators need to remove individual stale or test entries | LOW | Mirrors Ack button template slot. Calls delete endpoint with `item._id`. Removes row optimistically from local `alarms` array on success. |
+| `POST /Invoke/auth/deleteS7PlusAlarms` bulk endpoint | Backend must remove all documents matching current filter | MEDIUM | Translates `alarmState` and `alarmClassName` filter params from request body to a MongoDB query document. `deleteMany` on the result. |
+| "Delete Filtered (N)" button in `S7PlusAlarmsViewerPage.vue` | Operators need to clear all currently visible rows in one action | LOW | Button renders `filteredAlarms.length` as count. Sends current filter values (`statusFilter`, `alarmClassFilter`) to bulk delete endpoint. Calls `fetchAlarms()` after success. |
 
-### Differentiators (Nice-to-Have)
+### Differentiators (Competitive Advantage)
+
+Features beyond the strict requirements that would strengthen the PoC demonstration.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Ack write-back to PLC | Close the loop — operator acks in SCADA, PLC sees it | HIGH | No existing driver API; S7CommPlus ack PDU is undocumented; Wireshark trace required before implementation |
-| Auto-refresh alarm table | Live alarm view without manual reload | LOW | setInterval(5000) polling `GET /s7plusAlarms`; pause during user interaction |
-| Filter by status (Incoming/Outgoing/All) | Reduce noise; match TIA Portal filter behavior | LOW | Client-side filter on `alarmState` field |
-| Filter by alarm class | Show only specific alarm classes | LOW | Client-side filter on `alarmClassName` |
-| Pagination | Handle large alarm histories | LOW | Vuetify `v-data-table` built-in pagination |
-| "Receive alarms" PLC selector | Match TIA Portal UX for multi-PLC environments | LOW | Dropdown filtered by `connectionName` |
+| DB number secondary display (e.g. "MotorDB [DB5]") | Gives operators both symbolic and numeric reference without extra storage | LOW | Derivable: `db_number = relationId & 0xFFFF`. Pure display formatting in Vue. Only add if DB names alone are ambiguous. |
+| "Origin DB" filter dropdown in viewer | Lets operators isolate alarms by source subsystem when multiple DBs produce alarms | LOW | Same client-side filter pattern as `alarmClassName` filter. Only valuable if PoC PLC has multiple alarm-producing DBs. |
 
-### Anti-Features (Explicitly Out of Scope for v1.1)
+### Anti-Features (Commonly Requested, Often Problematic)
 
-| Feature | Why Requested | Why Out of Scope | Alternative |
+| Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Modify existing `AlarmsViewerPage.vue` | Consolidate viewers | Existing viewer must not change per requirement | Fully separate component and route |
-| Multi-language alarm class names | Internationalization | TIA Portal user-defined class display names are NOT transmitted over S7CommPlus wire protocol | English static mapping only |
-| Alarm class browse for custom class names | Show user-defined TIA Portal class names | Protocol does not deliver custom class name strings — only numeric IDs | Static map for protocol-fixed IDs; custom IDs show as "UserClass_N" |
-| Real-time WebSocket push | Instant alarm appearance | Infrastructure complexity not justified for viewer PoC | 5s polling is sufficient |
-| Alarm history export (CSV/PDF) | Reporting | Out of scope — viewer is the deliverable | MongoDB Compass or future phase |
-| Alarm suppression / shelving | Advanced alarm management | ISA 18.2 advanced states; out of scope | Not implemented |
-| Multi-LCID alarm texts | Multi-language deployment | LCID hardcoded to 1033 (English) from v1.0 | Single language only |
-
----
-
-## TIA Portal Column Reference
-
-Based on the screenshot provided, the viewer must display:
-
-| TIA Portal Column | MongoDB Field | Notes |
-|-------------------|---------------|-------|
-| Source | `connectionName` | PLC connection name |
-| Date | `plcTimestamp` (date part) | Format: M/D/YYYY |
-| Time | `plcTimestamp` (time part) | Format: HH:MM:SS.mmm AM/PM |
-| Status | `alarmState` | "Incoming" / "Outgoing" |
-| Acknowledge | `ackState` | "Required" if unacked + ack button, "—" if not required, checkmark if acked |
-| Alarm class name | `alarmClassName` | **New in v1.1** — derived from `alarmClass` numeric ID |
-| Event text | `alarmText` | Primary alarm message |
-| Help | `infotext` | Optional info text |
-| Info text | (additional metadata) | TBD — map to available fields |
-| ID | `cpuAlarmId` | Alarm identity |
-| Additional text 1 | `additionalTexts[0]` | SD_1 resolved text |
-| Additional text 2 | `additionalTexts[1]` | SD_2 resolved text |
-| Additional text 3 | `additionalTexts[2]` | SD_3 resolved text |
-
----
-
-## ISA 18.2 Alarm State Model (Viewer Display Logic)
-
-For displaying alarm state correctly in the viewer:
-
-| ISA 18.2 State | `alarmState` | `ackState` | Display |
-|----------------|--------------|------------|---------|
-| Unacknowledged Active | "coming" | false | Incoming / **Required** (highlighted) |
-| Acknowledged Active | "coming" | true | Incoming / Acknowledged |
-| Unacknowledged Cleared | "going" | false | Outgoing / **Required** |
-| Acknowledged Cleared | "going" | true | Outgoing / — |
+| Show FB type name (backing FB of instance DB) | Seems like useful engineering context | Requires a separate `GetTypeInformation()` browse per DB after `GetListOfDatablocks()` — doubles startup cost. FB name is not in `DatablockInfo` and is not meaningful to operators. | Show `db_name` only. Engineers look up FB type in TIA Portal. |
+| Symbolic variable path within DB (e.g. `MotorDB.AlarmBit_1`) | Maximum diagnostic detail for fault-finding | Not in alarm notification metadata. Would require matching `Alid` field against variable type info — full DB browse at startup, large overhead, complex Alid-to-variable matching. Out of scope for PoC. | Show DB name. The alarm text already describes the condition. |
+| Soft-delete / recycle bin | "What if I delete the wrong one?" | Doubles schema complexity (deleted flag, query filter on every read). PoC has no audit trail requirement. | Hard delete. Viewer shows current live log only. |
+| Confirmation modal on per-row delete | Prevent accidental single-row deletion | Adds two clicks per deletion in a dense engineering table. PoC users understand consequences. | No modal. Button label is "Delete". Optimistic removal gives immediate feedback. |
+| Persist `relationId → db_name` map to MongoDB | Survive driver restart without PLC re-browse | PoC with a fixed PLC program has no restart scenario requiring persistence. Map rebuild at startup is always authoritative. Persisting adds write/read complexity and a staleness problem if PLC program changes. | Rebuild map at every driver startup. In-memory only. |
+| Auto-resubscribe alarm subscription after failure | Robustness for production | Known technical debt item, out of scope for this milestone. | Manual driver restart for PoC. |
 
 ---
 
 ## Feature Dependencies
 
 ```
-[ackState bug fix]
-    └──required by──> [Ack write-back]
-    └──required by──> [Ack button in viewer] (meaningless if ackState always true)
-    └──required by──> [ISA 18.2 state display] (Acknowledge column)
+[GetListOfDatablocks() at AlarmThread startup]
+    └──produces──> [Dictionary<uint, string>: relationId → db_name]
+                       └──consumed by──> [BuildAlarmDocument: originDbName lookup]
+                                             └──stores──> [originDbName in MongoDB]
+                                             └──stores──> [relationId in MongoDB]
 
-[Alarm class name resolution]
-    └──required by──> ["Alarm class name" viewer column]
+[originDbName in MongoDB documents]
+    └──enables──> [Origin DB column in Vue viewer]
 
-[S7Plus Alarms Viewer page]
-    └──required by──> [Ack button UI]
-    └──depends on──> [GET /s7plusAlarms backend endpoint]
-    └──depends on──> [POST /s7plusAlarmAck backend endpoint] (for ack button)
+[_id included in listS7PlusAlarms response]
+    └──enables──> [Per-row Delete button in Vue]
+                      └──requires──> [DELETE /deleteS7PlusAlarm endpoint]
 
-[Ack write-back to PLC]
-    └──required by──> [POST /s7plusAlarmAck endpoint]
-    └──depends on──> [ackState bug fix] (fix read before adding write)
-    └──HIGH RISK: Wireshark trace required before implementation
+[filteredAlarms computed property (already exists in v1.1)]
+    └──enables──> [Delete Filtered (N) button in Vue]
+                      └──requires──> [POST /deleteS7PlusAlarms endpoint]
 ```
+
+### Dependency Notes
+
+- **`_id` projection change:** Current `listS7PlusAlarms` endpoint projects `{ _id: 0 }`. Changing to `{}` (or explicitly including `_id: 1`) is a one-line change. MongoDB ObjectId must be serialized as a string for JSON (`_id.toString()`). Vue receives it and passes it back to the delete endpoint.
+
+- **Startup map placement:** `AlarmThread` currently: connect → `AlarmSubscriptionCreate()` → receive loop. The DB name map must be built before the receive loop starts, but after connection is established. Correct placement: after `Connect()` and before `AlarmSubscriptionCreate()`. Uses the same `alarmConn` connection. No third connection needed.
+
+- **`GetListOfDatablocks()` second pass is unnecessary:** The method's second pass (reading `LID=1` for `db_block_ti_relid`) is needed only for variable browse, not for origin mapping. The method can be called as-is and the `db_block_ti_relid` field ignored. Alternatively, a lighter helper can be extracted — but calling the existing method avoids new driver library changes.
+
+- **No new C# alarm protocol work:** Delete is purely a Node.js/MongoDB operation. The C# driver writes alarm events; it never reads or deletes them. No AlarmThread changes needed for the delete feature.
+
+- **Bulk delete filter translation:** The Vue-side filters are `statusFilter` (values: "All", "Incoming", "Outgoing") and `alarmClassFilter` (values: "All" or an `alarmClassName` string). The backend translates: "Incoming" → `{ alarmState: "Coming" }`, "Outgoing" → `{ alarmState: "Going" }`, "All" → no alarmState filter. `alarmClassFilter !== "All"` → `{ alarmClassName: value }`. These directly match the MongoDB field names already in documents.
 
 ---
 
-## MVP Recommendation — Phase Order
+## MVP Definition (v1.2)
 
-**Phase 2 (Driver fixes):** ackState bug fix + alarm class name resolution + `alarmClassName` field in MongoDB. These are pure C# changes with no frontend dependency. Fix data correctness before building UI.
+### Launch With
 
-**Phase 3 (Read-only viewer):** S7Plus Alarms Viewer page — displays all existing + new fields. No ack button yet (ack write-back not implemented). Validate the viewer looks correct and data flows.
+- [ ] `relationId` stored in `s7plusAlarmEvents` documents — computed from `cpuAlarmId >> 32`
+- [ ] Startup DB name map built via `conn.GetListOfDatablocks()` on alarm connection before subscription
+- [ ] `originDbName` stored in every new alarm document (map lookup at insert time, graceful fallback)
+- [ ] "Origin DB" column added to `S7PlusAlarmsViewerPage.vue`
+- [ ] `_id` included in `listS7PlusAlarms` response (remove `{ _id: 0 }` projection)
+- [ ] `DELETE /Invoke/auth/deleteS7PlusAlarm` endpoint — single-row delete by `_id`
+- [ ] Per-row Delete button in Vue viewer (mirrors Ack button pattern)
+- [ ] `POST /Invoke/auth/deleteS7PlusAlarms` endpoint — bulk delete by filter
+- [ ] "Delete Filtered (N)" button in Vue viewer
 
-**Phase 4 (Ack write-back + ack button):** Implement ack command pipeline (C# → commandsQueue → Express → Vue). Enable ack button in viewer. Validate end-to-end.
+### Add After Validation
 
----
+- [ ] "Origin DB" filter dropdown in viewer — only if multi-DB PLC scenario is needed
+- [ ] DB number secondary display `[DB5]` — cosmetic, add if db_name alone is ambiguous
 
-## MongoDB Document — v1.1 Additions
+### Future Consideration (v2+)
 
-New fields added to `s7plusAlarmEvents` in v1.1:
-
-```json
-{
-  "alarmClassName": "4_UrgentOnderhoud",  // NEW: derived from alarmClass numeric ID
-  "ackState": false,                        // FIXED: was always true in v1.0
-}
-```
+- [ ] FB type name column — requires full type info browse per DB, engineering-level detail
+- [ ] Variable path within DB — requires Alid-to-variable matching, high complexity
+- [ ] Alarm log retention policy (auto-expire after N days) — operational need, not PoC
 
 ---
 
 ## Feature Prioritization Matrix
 
-| Feature | v1.1 Value | Implementation Cost | Priority |
+| Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| Fix `ackState` always-true | HIGH | LOW-MEDIUM | P1 |
-| Alarm class name (`alarmClassName`) | HIGH | LOW | P1 |
-| S7Plus Alarms Viewer page | HIGH | MEDIUM | P1 |
-| TIA Portal-style columns | HIGH | LOW | P1 |
-| Ack write-back to PLC | HIGH | HIGH | P2 |
-| Acknowledge button in viewer | HIGH | LOW (depends on P2) | P2 |
-| Auto-refresh | MEDIUM | LOW | P2 |
-| Status / class filter | MEDIUM | LOW | P3 |
-| Pagination | MEDIUM | LOW | P3 |
+| `relationId` stored in MongoDB | MEDIUM | LOW | P1 |
+| Startup DB name map (GetListOfDatablocks) | HIGH | MEDIUM | P1 |
+| `originDbName` stored in MongoDB | HIGH | LOW | P1 |
+| Origin DB column in Vue | HIGH | LOW | P1 |
+| `_id` in list response | HIGH (enables delete) | LOW | P1 |
+| DELETE single endpoint + per-row button | HIGH | LOW | P1 |
+| Bulk delete endpoint + Delete Filtered button | HIGH | MEDIUM | P1 |
+| DB number secondary display | LOW | LOW | P2 |
+| Origin DB filter dropdown | LOW | LOW | P2 |
 
 ---
 
 ## Sources
 
-- `.planning/PROJECT.md` — v1.0 validated requirements, v1.1 goals
-- `S7CommPlusDriver/src/S7CommPlusDriver/Alarming/AlarmsMultipleStai.cs` — AlarmDomain numeric encoding (1, 2, 256–272)
-- `S7CommPlusClient/AlarmThread.cs` — ackState computation (`AckTimestamp != DateTime.MinValue`)
-- `AdminUI/src/components/AlarmsViewerPage.vue` — existing tag-based viewer reference
-- `AdminUI/package.json` — Vue 3.4.31, Vuetify 3.10 confirmed
-- TIA Portal alarm viewer screenshot (user-provided) — column reference
-- ISA 18.2 alarm management standard — four-state alarm model
+- `S7CommPlusDriver/src/S7CommPlusDriver/Alarming/BrowseAlarms.cs` — `AlarmData.RelationId`, `GetCpuAlarmId()` — confirms RelationId encoding in cpuAlarmId
+- `S7CommPlusDriver/src/S7CommPlusDriver/S7CommPlusConnection.cs` lines 1183–1314 — `GetListOfDatablocks()` implementation and `DatablockInfo` struct (db_name, db_number, db_block_relid)
+- `json-scada/src/S7CommPlusClient/AlarmThread.cs` — `BuildAlarmDocument()`, current MongoDB schema, alarm receive loop structure
+- `json-scada/src/server_realtime_auth/index.js` lines 350–407 — existing alarm endpoints, `{ _id: 0 }` projection, ack pattern to mirror for delete
+- `json-scada/src/AdminUI/src/components/S7PlusAlarmsViewerPage.vue` — existing headers, filters, Ack button template slot to mirror for Delete
+- `.planning/PROJECT.md` — confirmed active requirements for v1.2, out-of-scope constraints
+- `S7CommPlusGUIBrowser/Form1.cs` lines 60–75 — `GetListOfDatablocks()` usage reference (proven in GUI browser tool)
 
 ---
 
-*Feature research for: S7CommPlus alarm ack write-back, alarm class resolution, Vue 3 alarm viewer*
-*Researched: 2026-03-18*
+*Feature research for: S7CommPlus alarm origin and history cleanup (v1.2)*
+*Researched: 2026-03-23*

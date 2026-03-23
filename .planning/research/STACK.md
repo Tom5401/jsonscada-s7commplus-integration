@@ -1,104 +1,294 @@
 # Stack Research
 
-**Domain:** S7CommPlus alarm ack write-back, alarm class name resolution, Vue 3 SCADA alarm viewer
-**Researched:** 2026-03-18
-**Confidence:** HIGH (all findings grounded in direct codebase inspection)
+**Domain:** S7CommPlus alarm origin lookup + alarm delete — additions to existing v1.1 driver (v1.2 milestone)
+**Researched:** 2026-03-23
+**Confidence:** HIGH — all findings verified directly from submodule source code and existing project files
 
 ---
 
-## Recommended Stack
+## Summary of New Stack Needs
 
-### C# Driver — Ack Write-Back & Alarm Class Resolution
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| .NET / C# | net8.0 (LTS) | Runtime and language | Already used; no change |
-| S7CommPlusDriver | Project reference (local) | S7CommPlus protocol — alarm ack PDU send | `SetVariableRequest` infrastructure already present; ack PDU reuses same mechanism. Wireshark trace required for exact attribute IDs (not in `Ids.cs`). |
-| MongoDB.Driver | 3.4.2 (already pinned) | `UpdateOne` for ack confirmation writes | Already in use; `UpdateOne` on `s7plusAlarmEvents` with filter on `cpuAlarmId`. No version bump needed. |
-| System.Collections.Generic (BCL) | Built into .NET 8 | `Dictionary<ushort, string>` for alarm class name map | Alarm class names are NOT transmitted over the wire; mapped from protocol-fixed numeric IDs (1=Systemdiagnose, 2=Security, 256–272=UserClass_0..UserClass_16). Static dictionary in `Common.cs`. No NuGet package needed. |
-
-### Backend — Ack API
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| server_realtime_auth (Node.js/Express) | Existing | New REST endpoints for alarm data and ack commands | Already used by AdminUI; two new routes: `GET /s7plusAlarms` (query MongoDB) and `POST /s7plusAlarmAck` (insert into `commandsQueue`). No new npm packages. |
-| commandsQueue (MongoDB collection) | Existing | Route ack command from frontend to C# driver | Extend with new sentinel `protocolSourceASDU = "alarm_ack"`. New `AlarmAckToPLC` method in `MongoCommands.cs` handles this ASDU type. |
-
-### Frontend — Alarms Viewer
-
-| Technology | Version | Purpose | Why Recommended |
-|------------|---------|---------|-----------------|
-| Vue 3 | ^3.4.31 (already installed) | Component framework | Already in AdminUI |
-| Vuetify 3 | 3.10 (already installed) | `v-data-table`, layout components | Already in AdminUI; matches existing AlarmsViewerPage.vue style |
-| vue-router | ^4.4.0 (already installed) | New `/s7plus-alarms` route | Already in AdminUI |
-| fetch() (browser built-in) | N/A | Poll `GET /s7plusAlarms` every 5s | No new npm package; setInterval(5000) pattern is sufficient for alarm viewer |
-
-**No new NuGet packages. No new npm packages.**
+v1.2 adds two capabilities to an already-validated stack. **No new dependencies are required.** Every API needed exists in the current codebase. The sections below cover only what is new or changed for v1.2.
 
 ---
 
-## What NOT to Use
+## 1. PLC Browse at Startup — DB/FB Name Lookup
+
+### API available: `GetListOfDatablocks` + `ExploreASAlarms`
+
+**Source:** `S7CommPlusDriver/src/S7CommPlusDriver/S7CommPlusConnection.cs`, lines 1191–1313
+
+`GetListOfDatablocks(out List<DatablockInfo> dbInfoList)` is a public method on `S7CommPlusConnection`. It issues an `ExploreRequest` to `Ids.NativeObjects_thePLCProgram_Rid` filtered on `Ids.DB_Class_Rid`, retrieves `ObjectVariableTypeName` for each DB, and populates:
+
+```csharp
+public class DatablockInfo
+{
+    public string db_name;           // symbolic name, e.g. "AlarmDB"
+    public UInt32 db_number;         // numeric DB number
+    public UInt32 db_block_relid;    // 0x8a0e0000 | db_number
+    public UInt32 db_block_ti_relid; // TypeInfo RID (for variable browsing)
+}
+```
+
+**Also available:** `ExploreASAlarms(ref Dictionary<ulong, AlarmData> Alarms, int languageId)` in the same file (line 42 of BrowseAlarms.cs). The second explore pass in this method queries `NativeObjects_thePLCProgram_Rid` and requests `Ids.ObjectVariableTypeName` on each sub-object. Each sub-object's `ob.RelationId` is the same RelationId that ends up encoded in the upper 32 bits of `CpuAlarmId`:
+
+```
+CpuAlarmId (ulong, 64-bit):
+  bits 63..32 = RelationId of the source block (FB instance / DB)
+  bits 31..16 = Alid (alarm number within that block)
+  bits 15..0  = 0
+```
+
+Confirmed in `BrowseAlarms.cs` line 414:
+```csharp
+return ((ulong)(RelationId) << 32) | ((ulong)(MultipleStai.Alid) << 16);
+```
+
+### What to build
+
+At driver startup, after the tag-browse phase, walk the PLCProgram sub-objects to build a `Dictionary<uint, string>` of `RelationId → block name`. This can be done with either:
+
+- `GetListOfDatablocks` for DB-area blocks (`0x8a0e` prefix); or
+- a targeted `ExploreRequest` to `NativeObjects_thePLCProgram_Rid` requesting `ObjectVariableTypeName` for all sub-objects (this is already what the second loop in `ExploreASAlarms` does)
+
+**Recommended approach for PoC simplicity:** Call `GetListOfDatablocks` (already used in the tag-browse path) and build the map from `db_block_relid → db_name`. When writing an alarm event, extract the block RelationId with `(uint)(dai.CpuAlarmId >> 32)` and look it up. If the DB area (`0x8a0e`) matches, the name is available. Store the result as `blockName` in the MongoDB document at write time — no separate lookup later.
+
+### Integration point
+
+Add one field to `S7CP_connection` in `Common.cs`:
+
+```csharp
+public Dictionary<uint, string> RelationIdToBlockName = new Dictionary<uint, string>();
+```
+
+Populate it in `ConnectionThread` right after the existing `GetListOfDatablocks` / tag-address-cache phase, before `AlarmThread` starts. Use the same `srv.connection` that is already open at that point. Pass `srv` into `AlarmThread` (already happens) so `BuildAlarmDocument` can consult the dict.
+
+### Protocol note
+
+`GetListOfDatablocks` uses `ExploreRequest`, which is already exercised every startup for tag browsing. No new protocol functions are needed. Timeout behaviour matches the existing pattern: `WaitForNewS7plusReceived(m_ReadTimeout)` with 5000 ms default.
+
+---
+
+## 2. Storing RelationID + Block Name in MongoDB
+
+### What to add to `BuildAlarmDocument` in `AlarmThread.cs`
+
+Two new fields in the `BsonDocument` returned by `BuildAlarmDocument`:
+
+```csharp
+{ "relationId",  (long)(dai.CpuAlarmId >> 32) },
+{ "blockName",   srv.RelationIdToBlockName.TryGetValue((uint)(dai.CpuAlarmId >> 32), out var bn) ? bn : "" },
+```
+
+`relationId` is stored as `long` (BsonInt64) because `uint` fits safely in 64-bit. `blockName` is an empty string when the block is not found in the map (e.g. FB types not present in the DB browse result).
+
+### Storage decision: in-memory dictionary (NOT MongoDB collection, NOT JSON file)
+
+| Option | Verdict | Reason |
+|--------|---------|--------|
+| In-memory `Dictionary<uint, string>` on `S7CP_connection` | **USE THIS** | Zero latency at alarm-write time; rebuilt on every reconnect (reflects PLC program changes automatically); consistent with existing `AddressCache` pattern in `Common.cs` line 93 |
+| Separate MongoDB `s7plusBlockNames` collection | Avoid | Adds a write phase at startup, a read at alarm-write time, and stale data risk if PLC program changes without driver restart |
+| JSON file on disk | Avoid | Manual maintenance; out of step with automated browse; not how json-scada stores protocol metadata |
+
+---
+
+## 3. DELETE Endpoint — Node.js server_realtime_auth
+
+**Existing pattern to mirror:** `POST /Invoke/auth/ackS7PlusAlarm` (index.js lines 372–407) uses `db.collection(...)` (native MongoDB driver, not Mongoose) with `insertOne`.
+
+**New endpoints needed:**
+
+### DELETE single row
+
+```js
+app.delete(
+  OPCAPI_AP + 'auth/deleteS7PlusAlarm',
+  [authJwt.isAdmin],
+  async (req, res) => {
+    try {
+      if (!db) return res.status(200).send({ error: 'DB not connected' })
+      const { cpuAlarmId } = req.body
+      if (!cpuAlarmId) return res.status(400).send({ error: 'Missing cpuAlarmId' })
+      const result = await db.collection('s7plusAlarmEvents')
+        .deleteOne({ cpuAlarmId: cpuAlarmId.toString() })
+      res.status(200).send({ ok: true, deleted: result.deletedCount })
+    } catch (err) {
+      Log.log(err)
+      res.status(200).send({ error: err.message })
+    }
+  }
+)
+```
+
+### DELETE bulk (filtered rows)
+
+```js
+app.delete(
+  OPCAPI_AP + 'auth/deleteS7PlusAlarms',   // plural
+  [authJwt.isAdmin],
+  async (req, res) => {
+    try {
+      if (!db) return res.status(200).send({ error: 'DB not connected' })
+      const { cpuAlarmIds } = req.body      // array of strings
+      if (!Array.isArray(cpuAlarmIds) || cpuAlarmIds.length === 0)
+        return res.status(400).send({ error: 'Missing or empty cpuAlarmIds array' })
+      const result = await db.collection('s7plusAlarmEvents')
+        .deleteMany({ cpuAlarmId: { $in: cpuAlarmIds.map(String) } })
+      res.status(200).send({ ok: true, deleted: result.deletedCount })
+    } catch (err) {
+      Log.log(err)
+      res.status(200).send({ error: err.message })
+    }
+  }
+)
+```
+
+**Why `deleteMany` with explicit ID list (not a filter object):**
+
+The Vue component already computed `filteredAlarms` client-side (status filter + alarm class filter). Sending the IDs of those filtered rows avoids translating Vue filter state into a MongoDB query — the server stays simple, the client sends exactly what it wants deleted. Consistent with the PoC simplicity constraint.
+
+**MongoDB driver version:** `mongodb ^7.0.0` (package.json). `deleteOne` / `deleteMany` API is stable since v4+. `result.deletedCount` is available in all v4+ versions. No version concern.
+
+**HTTP verb:** `DELETE` is semantically correct. The existing `ackS7PlusAlarm` uses `POST` because it creates a command record (a write). Delete is direct data removal — `DELETE` is the right verb. Vue's `fetch` supports `method: 'DELETE'` natively.
+
+---
+
+## 4. Vue 3 Delete Button + Bulk Delete
+
+### Per-row Delete button
+
+Mirror the existing Ack button pattern (S7PlusAlarmsViewerPage.vue lines 47–54). Add a new column slot:
+
+```vue
+<template #[`item.deleteAction`]="{ item }">
+  <v-btn
+    size="x-small"
+    variant="tonal"
+    color="error"
+    :loading="pendingDeletes.has(item.cpuAlarmId)"
+    @click="deleteAlarm(item.cpuAlarmId)"
+  >
+    Delete
+  </v-btn>
+</template>
+```
+
+```js
+const pendingDeletes = ref(new Set())
+
+const deleteAlarm = async (cpuAlarmId) => {
+  pendingDeletes.value = new Set([...pendingDeletes.value, cpuAlarmId])
+  try {
+    await fetch('/Invoke/auth/deleteS7PlusAlarm', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cpuAlarmId }),
+    })
+    alarms.value = alarms.value.filter(a => a.cpuAlarmId !== cpuAlarmId)
+  } finally {
+    pendingDeletes.value = new Set([...pendingDeletes.value].filter(id => id !== cpuAlarmId))
+  }
+}
+```
+
+**Key difference from Ack:** After delete succeeds, remove the row from `alarms.value` immediately. The Ack button leaves the row in place and waits for the next poll to confirm `ackState: true`. Delete should vanish the row at once — matches operator expectation.
+
+### Bulk Delete Filtered
+
+Add a button above the table (not inside a row):
+
+```vue
+<v-btn
+  color="error"
+  variant="tonal"
+  :disabled="filteredAlarms.length === 0 || bulkDeletePending"
+  :loading="bulkDeletePending"
+  @click="deleteFiltered"
+>
+  Delete Filtered ({{ filteredAlarms.length }})
+</v-btn>
+```
+
+```js
+const bulkDeletePending = ref(false)
+
+const deleteFiltered = async () => {
+  const ids = filteredAlarms.value.map(a => a.cpuAlarmId)
+  if (ids.length === 0) return
+  bulkDeletePending.value = true
+  try {
+    await fetch('/Invoke/auth/deleteS7PlusAlarms', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cpuAlarmIds: ids }),
+    })
+    const idSet = new Set(ids)
+    alarms.value = alarms.value.filter(a => !idSet.has(a.cpuAlarmId))
+  } finally {
+    bulkDeletePending.value = false
+  }
+}
+```
+
+**Why `filteredAlarms.value` (not `alarms.value`):** The user applies status/class filters, then clicks "Delete Filtered" — they expect only visible rows to be removed. `filteredAlarms` is already the computed subset. This avoids any need to replicate filter logic server-side.
+
+**Vuetify version:** v3 (already in use). `v-btn` with `:loading` prop is Vuetify 3 standard. No library additions needed.
+
+---
+
+## Core Technologies (unchanged from v1.1)
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| S7CommPlusDriver | submodule | PLC protocol — `GetListOfDatablocks`, `ExploreASAlarms`, `S7CommPlusConnection` |
+| MongoDB.Driver (C#) | 3.4.2 | Alarm event document writes — new `relationId` + `blockName` fields via existing `InsertOneAsync` |
+| mongodb (Node.js) | ^7.0.0 | `deleteOne` / `deleteMany` in new delete endpoints |
+| Vue 3 + Vuetify 3 | existing | Per-row delete button + bulk delete toolbar button |
+
+## Supporting Libraries — No New Additions
+
+All required APIs (`GetListOfDatablocks`, `ExploreASAlarms`, `deleteOne`, `deleteMany`, `v-btn :loading`) are present in already-installed versions. No `npm install` or NuGet package changes are needed for v1.2.
+
+---
+
+## What NOT to Add
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| Pinia / Vuex | State management overkill for a single alarm viewer page | Local component state + fetch polling |
-| GraphQL subscriptions / WebSockets | Infrastructure not needed for 5s polling alarm viewer | fetch() + setInterval |
-| New MongoDB alarm ack queue | Unnecessary — `commandsQueue` already routes commands to C# driver | Extend `commandsQueue` with `"alarm_ack"` ASDU type |
-| Extending existing `AlarmsViewerPage.vue` | Must not modify existing tag-based viewer | New `S7PlusAlarmsViewerPage.vue` — fully independent component |
-| MongoDB.Driver version bump | No benefit for PoC; v3.x has breaking changes between minors | Pin at 3.4.2 |
+| Separate `s7plusBlockNames` MongoDB collection | Extra write at startup, stale data risk, unnecessary complexity for a PoC | In-memory `Dictionary<uint, string>` on `S7CP_connection` — matches `AddressCache` pattern |
+| New S7CommPlusDriver NuGet package | Driver is a submodule built locally; protocol APIs already exist in source | Use `GetListOfDatablocks` + `ExploreASAlarms` directly from existing submodule |
+| `GetVarSubSL` / `GetVarSubstreamed` for block discovery | These are variable-value read APIs, not block browse APIs | `ExploreRequest` via `GetListOfDatablocks` is the correct browse path |
+| Full PLCProgram variable tree browse for origin lookup | Fetches all variable type info — expensive and irrelevant for just block names | Single `GetListOfDatablocks` call is sufficient |
+| Axios or other HTTP libraries in Vue | Unnecessary dependency; `fetch` is already used throughout the viewer | Continue with `fetch` |
+| Confirmation dialog for per-row delete | Adds friction; not in scope for PoC | Simple button click, row vanishes immediately |
+| MongoDB index on `cpuAlarmId` field | PoC with limited data volume; existing pattern has no indexes on this collection | No index needed at PoC scale |
 
 ---
 
-## Key Implementation Notes
+## Version Compatibility
 
-### ackState Bug Fix
-- **Location:** `AlarmThread.cs` line ~191 — `ackState = dai.AsCgs.AckTimestamp != DateTime.MinValue`
-- **Risk:** Encoding for "unacknowledged" state on live PLC may differ from `DateTime.MinValue`
-- **Required:** Live Wireshark trace or PLC test with known-unacknowledged alarm to verify correct sentinel value before fixing
-
-### Alarm Class Name Resolution
-- **Source:** `AlarmsMultipleStai.cs` — `AlarmDomain` encodes class as protocol-fixed numeric ID
-- **Mapping:** Static `Dictionary<ushort, string>` — IDs 1, 2, 256–272 have known names; user-defined TIA Portal display names are NOT available from the protocol
-- **Storage:** Add `alarmClassName` string field to MongoDB alarm document alongside existing `alarmClass` (int)
-
-### Ack Write-Back — Open Question
-- Exact `SetVariableRequest` payload (object ID, attribute ID, value) for alarm ack is NOT documented in `Ids.cs`
-- **Required before implementation:** Wireshark capture of TIA Portal HMI performing an ack operation
-
-### Alarm Viewer Data Flow
-```
-Vue S7PlusAlarmsViewerPage
-  → GET /s7plusAlarms (server_realtime_auth)
-    → MongoDB s7plusAlarmEvents.find()
-  → POST /s7plusAlarmAck (server_realtime_auth)
-    → commandsQueue.insertOne({ protocolSourceASDU: "alarm_ack", cpuAlarmId: ... })
-      → MongoCommands.cs AlarmAckToPLC()
-        → SetVariableRequest to PLC
-```
-
----
-
-## Open Questions for Phase-Specific Research
-
-1. **Alarm ack wire format** — What `SetVariableRequest` payload acknowledges an alarm over S7CommPlus? Wireshark decode of TIA Portal HMI performing ack required before implementing `AlarmAckToPLC`.
-
-2. **AckTimestamp encoding for unacknowledged alarms** — Is the sentinel `DateTime.MinValue`, zero timestamp, or something else? Requires live capture with known-unacknowledged alarm.
-
-3. **server_realtime_auth route registration** — Inline or `app/routes/` file structure? Does `authJwt` middleware apply? Check `app/routes/auth.routes.js`.
+| Component | Version | Compatibility Note |
+|-----------|---------|-------------------|
+| MongoDB.Driver (C#) | 3.4.2 | `InsertOneAsync`, `UpdateManyAsync` already in use; `DeleteOneAsync`/`DeleteManyAsync` available with identical async pattern — no version bump needed |
+| mongodb (Node.js) | ^7.0.0 | `deleteOne`/`deleteMany` return `{ deletedCount }` — stable API since v4 |
+| Vue 3 | existing | `ref`, `computed`, `fetch` — no new Vue APIs needed |
+| Vuetify 3 | existing | `v-btn :loading` prop — standard Vuetify 3; no new components needed |
 
 ---
 
 ## Sources
 
-- Codebase: `S7CommPlusClient.csproj` — MongoDB.Driver 3.4.2, net8.0, x64 confirmed
-- Codebase: `AlarmThread.cs` — ackState computation at line ~191 (`AckTimestamp != DateTime.MinValue`)
-- Codebase: `AlarmsMultipleStai.cs` — AlarmDomain numeric encoding (1, 2, 256–272)
-- Codebase: `MongoCommands.cs` — commandsQueue consumer, protocolSourceASDU routing
-- Codebase: `AdminUI/package.json` — Vue 3.4.31, Vuetify 3.10, vue-router 4.4.0 confirmed
-- Codebase: `AdminUI/src/components/AlarmsViewerPage.vue` — existing viewer reference (not to be modified)
-- Codebase: `json-scada/src/server_realtime_auth/` — Express route pattern for new endpoints
+- `S7CommPlusDriver/src/S7CommPlusDriver/S7CommPlusConnection.cs` lines 1183–1313 — `GetListOfDatablocks` implementation and `DatablockInfo` struct (HIGH confidence, source code)
+- `S7CommPlusDriver/src/S7CommPlusDriver/Alarming/BrowseAlarms.cs` lines 408–416 — `AlarmData.GetCpuAlarmId()` confirming `RelationId << 32` encoding (HIGH confidence, source code)
+- `S7CommPlusDriver/src/S7CommPlusDriver/Alarming/AlarmsDai.cs` — `FromNotificationObject` showing `CpuAlarmId` comes from `DAI_CPUAlarmID` attribute (HIGH confidence, source code)
+- `json-scada/src/S7CommPlusClient/AlarmThread.cs` — `BuildAlarmDocument` pattern for adding new fields to alarm documents (HIGH confidence, source code)
+- `json-scada/src/S7CommPlusClient/Common.cs` line 93 — `AddressCache` field confirming per-connection in-memory dict pattern (HIGH confidence, source code)
+- `json-scada/src/server_realtime_auth/index.js` lines 350–407 — existing list/ack endpoints showing `db.collection(...).find()/insertOne()` pattern with `authJwt.isAdmin` middleware (HIGH confidence, source code)
+- `json-scada/src/AdminUI/src/components/S7PlusAlarmsViewerPage.vue` — existing Ack button + `pendingAcks` Set pattern to mirror (HIGH confidence, source code)
+- `json-scada/src/S7CommPlusClient/S7CommPlusClient.csproj` — MongoDB.Driver 3.4.2 confirmed (HIGH confidence, project file)
+- `json-scada/src/server_realtime_auth/package.json` — mongodb ^7.0.0 confirmed (HIGH confidence, project file)
 
 ---
 
-*Stack research for: S7CommPlus alarm ack write-back, alarm class resolution, Vue 3 alarm viewer*
-*Researched: 2026-03-18*
+*Stack research for: S7CommPlus Alarm Origin & Cleanup (v1.2)*
+*Researched: 2026-03-23*
