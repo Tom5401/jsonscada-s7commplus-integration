@@ -235,33 +235,38 @@ if (asdu == "s7plus-alarm-ack")
 
 | Check | Status |
 |-------|--------|
-| Prototype tested against live PLC | **NOT YET — requires PLCSIM test run** |
-| Alarm `cpuAlarmId` acknowledged successfully | **PENDING VERIFICATION** |
-| `CreateObjectResponse.ReturnValue == 0` | PENDING |
-| AckJob notification received confirming completion | PENDING |
+| Prototype tested against live PLC | **VERIFIED 2026-03-19** |
+| Alarm `cpuAlarmId` acknowledged successfully | **CONFIRMED — visible in TIA Portal** |
+| `CreateObjectResponse.ReturnValue == 0` | **CONFIRMED — ReturnValue=0x0000000000000000** |
+| AckJob notification received confirming completion | Notification arrives; skipped by design in `SendAlarmAck` (we use the CreateObjectResponse, not the async notification) |
 
-### Next Steps for Verification
+### Verified Encoding (2026-03-19)
 
-1. Start S7CommPlusClient with PLCSIM running and an active unacknowledged alarm.
-2. Call `SendAlarmAck(srv.connection, cpuAlarmId)` from a test harness (or temporarily from `AlarmSubscriptionCreate`'s callback path).
-3. Observe the `CreateObjectResponse.ReturnValue` — expected: `0`.
-4. Check PLCSIM's alarm table — the alarm should move to acknowledged state.
-5. If `ReturnValue != 0`: inspect the error code. Common failure modes:
-   - Wrong `AcknowledgementList` encoding → try as a flat Addressarray attribute instead of child PObject
-   - Wrong `AttributeId` on the `ackElem` PObject → try `AttributeId = 0` (no composition)
-   - Wrong `ClassId` on `ackJobObj` → verify against live capture once TIA Portal TLS keys are available
+**Key finding:** `ValueStruct.Serialize()` produces key-value format **without a COUNT prefix**. The PLC (and Wireshark) expect Addressarray Struct as `COUNT (VLQ) + per-element key-value pairs`. Without COUNT, the PLC/Wireshark reads the first element key VLQ (7598) as the array size (7598 elements) — causing `InvalidAttributeIdentifier` or `ObjectNotFound`.
 
-### Fallback Encoding
-
-If the child-PObject approach fails, the alternative is to encode the AcknowledgementList as a flat `ValueULWordArray` attribute directly on the AckJob object:
-
-```csharp
-// Fallback: flat array attribute instead of child PObject
-ackJobObj.AddAttribute(AckJob_AcknowledgementList,
-    new ValueULWordArray(new ulong[] { cpuAlarmId }, 0x20)); // 0x20 = Addressarray
+**Correct wire format for `AckJob.AcknowledgementList`:**
+```
+[0x20]                  DatatypeFlags = Addressarray
+[0x17]                  Datatype = Struct
+[0x00 0x00 0x1D 0xB4]   ClassId = 7604 (AS_AlarmAcknfyElem.Class_Rid), 4 fixed bytes
+[0x01]                  COUNT = 1 element (VLQ)
+[0xBB 0x2E]             key = 7598 (CPUAlarmID), VLQ
+[0x00 0x0B + 8 bytes]   ValueLWord(cpuAlarmId)
+[0xBB 0x2C]             key = 7596 (AllStatesInfo), VLQ
+[0x00 0x06 0x02]        ValueUSInt(2) = acknowledge
+[0x00]                  element [0] terminator
 ```
 
-This must be tested against PLCSIM. The child-PObject approach is tried first because it matches the decoded `AS_AlarmAcknfyElem.Class_Rid` struct type visible in the AckJob notification.
+**Implementation:** Custom `AckListValue : PValue` nested class in `AlarmAck.cs` that writes this exact byte sequence. `ValueStruct` cannot be used because it lacks the COUNT prefix.
+
+**Error progression during development:**
+1. Nested PObject (RelId=211): `InvalidRID`
+2. Nested PObject (RelId=0): `InvalidRID`
+3. `ValueLWordArray`: `InvalidValueType` (confirmed Struct is expected)
+4. `ValueStruct(7604, 0x20)` + AllStatesInfo + CPUAlarmID (key-value, no COUNT): `InvalidAttributeIdentifier` at OMS 2590
+5. `ValueStruct(7604, 0x20)` + CPUAlarmID only (key-value, no COUNT): same `InvalidAttributeIdentifier`
+6. `ValueStruct(0, 0x20)` + CPUAlarmID (key-value, no COUNT, ClassId=0): `ObjectNotFound` — Wireshark showed "Array size: 7598", confirmed COUNT field was missing
+7. **`AckListValue` with COUNT=1 + ClassId=7604 + key-value elements: SUCCESS** ✓
 
 ---
 
