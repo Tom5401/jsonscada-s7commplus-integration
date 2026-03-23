@@ -48,7 +48,10 @@ Full details: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
   1. A newly triggered alarm event document in `s7plusAlarmEvents` contains a `relationId` field stored as BsonInt64 (Int64, not Int32)
   2. A newly triggered alarm event document contains a `dbNumber` field (uint) correctly extracted as `relationId >> 16 & 0xFFFF`
   3. The driver compiles and runs without error after the field additions; alarm subscription loop continues normally
-**Plans**: TBD
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Add relationId (BsonInt64) and dbNumber (BsonInt32) to BuildAlarmDocument
 
 ---
 
@@ -101,7 +104,7 @@ Full details: [milestones/v1.1-ROADMAP.md](milestones/v1.1-ROADMAP.md)
 | 2. Driver Fixes | v1.1 | 2/2 | Complete | 2026-03-18 |
 | 3. Read-Only Alarm Viewer | v1.1 | 2/2 | Complete | 2026-03-19 |
 | 4. Ack Write-Back | v1.1 | 2/2 | Complete | 2026-03-19 |
-| 5. Driver — RelationId Fields | v1.2 | 0/? | Not started | - |
+| 5. Driver — RelationId Fields | v1.2 | 0/1 | Not started | - |
 | 6. Driver — Startup DB Name Map | v1.2 | 0/? | Not started | - |
 | 7. Backend — Delete Endpoint + _id Exposure | v1.2 | 0/? | Not started | - |
 | 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 0/? | Not started | - |
