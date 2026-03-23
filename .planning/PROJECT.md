@@ -45,7 +45,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ### Active
 
-- [ ] Store relationID in s7plusAlarmEvents MongoDB documents
+- ✓ Store relationID (BsonInt64) and dbNumber (BsonInt32) in s7plusAlarmEvents MongoDB documents — Validated in Phase 5: Driver RelationId Fields
 - [ ] Driver queries PLC at startup to build relationID → DB/FB Name map
 - [ ] DB Name (and FB Name if available) returned by alarm list API
 - [ ] Alarm viewer displays DB/FB origin as new column(s)
