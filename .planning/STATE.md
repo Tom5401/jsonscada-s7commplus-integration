@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-stopped_at: Completed 06-driver-startup-db-name-map/06-01-PLAN.md
-last_updated: "2026-03-23T13:18:27.832Z"
+stopped_at: Completed 07-backend-delete-endpoint-id-exposure/07-01-PLAN.md
+last_updated: "2026-03-24T07:13:58.715Z"
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -19,11 +19,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-23)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** Phase 06 — driver-startup-db-name-map
+**Current focus:** Phase 07 — backend-delete-endpoint-id-exposure
 
 ## Current Position
 
-Phase: 7
+Phase: 8
 Plan: Not started
 
 ## Performance Metrics
@@ -47,6 +47,7 @@ Plan: Not started
 | 8. Frontend — Delete Buttons + Origin Columns | 0/? | - |
 | Phase 05-driver-relationid-fields P01 | 10 | 1 tasks | 1 files |
 | Phase 06-driver-startup-db-name-map P01 | 2 | 2 tasks | 3 files |
+| Phase 07-backend-delete-endpoint-id-exposure P01 | 15 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -58,6 +59,9 @@ See PROJECT.md Key Decisions table for full log.
 - [Phase 05-driver-relationid-fields]: dbNumber = lower 16 bits of relationId (& 0xFFFF) not upper bits (>> 16) — confirmed by S7CommPlusConnection.cs:1247
 - [Phase 06-driver-startup-db-name-map]: Browse on tag connection (srv.connection) before alarm thread start — alarm connection does not exist at this point
 - [Phase 06-driver-startup-db-name-map]: Empty-string fallback for originDbName (not null) — consistent schema for Phase 7/8 API consumers
+- [Phase 07-backend-delete-endpoint-id-exposure]: HTTP 204 No Content on delete success — matches D-01 from context
+- [Phase 07-backend-delete-endpoint-id-exposure]: Empty filter guard rejects { filter: {} } with 400 to prevent accidental full-collection wipe
+- [Phase 07-backend-delete-endpoint-id-exposure]: app.post (not app.use) for delete endpoint — POST-only prevents accidental GET triggering delete
 
 ### Pending Todos
 
@@ -69,7 +73,7 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T13:16:00.374Z
-Stopped at: Completed 06-driver-startup-db-name-map/06-01-PLAN.md
+Last session: 2026-03-24T06:45:29.572Z
+Stopped at: Completed 07-backend-delete-endpoint-id-exposure/07-01-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 5`

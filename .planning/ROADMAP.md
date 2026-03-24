@@ -80,7 +80,7 @@ Plans:
   2. `POST /Invoke/auth/deleteS7PlusAlarms` with body `{ "ids": ["<id>"] }` deletes the matching document and returns success; a second call with the same ID returns success (idempotent)
   3. `POST /Invoke/auth/deleteS7PlusAlarms` with body `{ "filter": { "alarmState": "Going", "alarmClassName": "Errors" } }` deletes all matching documents
   4. Calling the delete endpoint without a valid admin JWT returns 401/403; the document is not deleted
-**Plans:** 1 plan
+**Plans:** 0/1 plans executed
 
 Plans:
 - [ ] 07-01-PLAN.md — Remove _id projection exclusion and add deleteS7PlusAlarms endpoint
@@ -111,5 +111,5 @@ Plans:
 | 4. Ack Write-Back | v1.1 | 2/2 | Complete | 2026-03-19 |
 | 5. Driver — RelationId Fields | v1.2 | 0/1 | Planned    |  |
 | 6. Driver — Startup DB Name Map | v1.2 | 1/1 | Complete   | 2026-03-23 |
-| 7. Backend — Delete Endpoint + _id Exposure | v1.2 | 0/1 | Planned | - |
+| 7. Backend — Delete Endpoint + _id Exposure | v1.2 | 0/1 | Planned    |  |
 | 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 0/? | Not started | - |
