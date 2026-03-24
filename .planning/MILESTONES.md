@@ -1,5 +1,27 @@
 # Milestones
 
+## v1.2 Alarm Origin & Cleanup (Shipped: 2026-03-24)
+
+**Phases completed:** 4 phases, 4 plans, 5 tasks
+
+**Key accomplishments:**
+
+- Common.cs
+- S7PlusAlarmsViewerPage.vue updated with origin columns, delete functionality, and Ack button restored via cherry-pick.
+
+---
+
+## v1.2 Alarm Origin & Cleanup (Shipped: 2026-03-24)
+
+**Phases completed:** 4 phases, 4 plans, 5 tasks
+
+**Key accomplishments:**
+
+- Common.cs
+- S7PlusAlarmsViewerPage.vue updated with origin columns, delete functionality, and Ack button restored via cherry-pick.
+
+---
+
 ## v1.1 — Alarm Management & Viewer (Shipped: 2026-03-23)
 
 **Phases:** 2–4 | **Plans:** 6 | **Timeline:** 2026-03-18 → 2026-03-19 (2 days)
@@ -8,6 +30,7 @@
 **Delivered:** Full alarm management loop — fixed ackState bug, added alarm class names, TIA Portal-style viewer in AdminUI with per-row acknowledge capability wired to PLC.
 
 **Key accomplishments:**
+
 - Fixed ackState always-true bug (DateTime.UnixEpoch sentinel confirmed via live PLCSIM trace)
 - Added alarmClassName field to MongoDB alarm documents (AlarmClass 33 = "Acknowledgment required"; Unknown (N) fallback)
 - S7PlusAlarmsViewerPage.vue — 11-column TIA Portal-equivalent table with 5s auto-refresh and status/class filters; i18n across 13 locales
@@ -24,6 +47,7 @@
 **Delivered:** Native S7CommPlus alarm subscription pipeline for json-scada — PLC alarms arrive in MongoDB `s7plusAlarmEvents` via push subscription, not polling, with full metadata.
 
 **Key accomplishments:**
+
 - Fixed 5 protocol bugs blocking alarm subscriptions (credit-limit renewal, subscription slot leak, RelationId collision, unknown PDU crash, ack-only null dereference)
 - Dedicated AlarmThread with full subscription lifecycle, graceful error handling, clean shutdown
 - Alarm events persisted to s7plusAlarmEvents with 14 fields including resolved additionalTexts (SD_1–SD_9 with @N%x@ substitution) and typed associatedValues (SD_1–SD_10)

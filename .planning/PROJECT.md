@@ -2,19 +2,9 @@
 
 ## What This Is
 
-A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus alarm subscriptions into json-scada with full alarm management capability. The driver (S7CommPlusClient) connects to Siemens S7-1200/S7-1500 PLCs using the reverse-engineered S7CommPlus protocol, subscribes to alarm events, writes alarm state, text, timestamps, acknowledgement status, and associated data values into a dedicated MongoDB collection, and sends acknowledgement commands back to the PLC. A dedicated S7Plus Alarms Viewer in AdminUI provides operators with a TIA Portal-equivalent interface.
+A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus alarm subscriptions into json-scada with full alarm management capability. The driver (S7CommPlusClient) connects to Siemens S7-1200/S7-1500 PLCs using the reverse-engineered S7CommPlus protocol, subscribes to alarm events, writes alarm state, text, timestamps, acknowledgement status, origin DB name, and associated data values into a dedicated MongoDB collection, and sends acknowledgement commands back to the PLC. A dedicated S7Plus Alarms Viewer in AdminUI provides operators with a TIA Portal-equivalent interface including origin columns and alarm history deletion.
 
-**Shipped:** v1.1 — Full alarm management loop validated live with PLCSIM Advanced V8 + TIA Portal v21 on 2026-03-19. Tag read/write continues in parallel.
-
-## Current Milestone: v1.2 Alarm Origin & Cleanup
-
-**Goal:** Enrich alarm events with PLC origin (DB/FB name) resolved from a live relationID lookup at driver startup, and give operators the ability to delete alarm history from the viewer.
-
-**Target features:**
-- Per-row Delete and Bulk "Delete Filtered" in S7PlusAlarmsViewerPage
-- RelationID stored in s7plusAlarmEvents MongoDB documents
-- Driver queries PLC at startup to map relationID → DB/FB Name
-- DB/FB Name column(s) added to alarm viewer table
+**Shipped:** v1.2 — Alarm origin enrichment and history deletion validated 2026-03-24. Full alarm management loop (subscribe → display → ack → delete) complete.
 
 ## Core Value
 
@@ -42,35 +32,38 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ Alarm viewer auto-refreshes every 5 seconds — v1.1
 - ✓ Per-row Acknowledge button — ack loop from UI to PLC — v1.1
 - ✓ Status and alarm class filters — v1.1
+- ✓ Store relationId (BsonInt64) and dbNumber (BsonInt32) in s7plusAlarmEvents MongoDB documents — v1.2
+- ✓ Driver queries PLC at startup to build relationId → DB Name map (GetListOfDatablocks) — v1.2
+- ✓ originDbName (TIA Portal datablock name) stored in every alarm document at write time — v1.2
+- ✓ `_id` exposed in alarm list API response for delete targeting — v1.2
+- ✓ `POST /Invoke/auth/deleteS7PlusAlarms` endpoint with admin guard, ids-based and filter-based delete — v1.2
+- ✓ Alarm viewer displays Origin DB Name and DB Number columns — v1.2
+- ✓ Per-row Delete button in alarm viewer with Coming+unacked warning dialog — v1.2
+- ✓ Bulk "Delete Filtered" button removes all currently visible rows with confirmation dialog — v1.2
 
 ### Active
 
-- ✓ Store relationID (BsonInt64) and dbNumber (BsonInt32) in s7plusAlarmEvents MongoDB documents — Validated in Phase 5: Driver RelationId Fields
-- ✓ Driver queries PLC at startup to build relationID → DB/FB Name map — Validated in Phase 6: driver-startup-db-name-map
-- ✓ DB Name (and FB Name if available) returned by alarm list API — Validated in Phase 7: backend-delete-endpoint-id-exposure
-- ✓ `_id` exposed in alarm list API response for delete targeting — Validated in Phase 7: backend-delete-endpoint-id-exposure
-- ✓ `POST /Invoke/auth/deleteS7PlusAlarms` endpoint with admin guard, ids-based and filter-based delete — Validated in Phase 7: backend-delete-endpoint-id-exposure
-- ✓ Alarm viewer displays Origin DB Name and DB Number columns — Validated in Phase 8: frontend-delete-buttons-origin-columns
-- ✓ Per-row Delete button in alarm viewer with Coming+unacked warning dialog — Validated in Phase 8: frontend-delete-buttons-origin-columns
-- ✓ Bulk "Delete Filtered" button removes all currently visible rows with confirmation dialog — Validated in Phase 8: frontend-delete-buttons-origin-columns
+*(None — all v1.2 requirements delivered. See /gsd:new-milestone for next milestone planning.)*
 
 ### Out of Scope
 
 - Polling-based alarm detection — native subscription only (carried from v1.0)
 - Upstream contribution to json-scada — internal use only
-- Polling-based alarm detection — native subscription only
-- Upstream contribution to json-scada — internal use only
 - Multi-PLC load distribution or HA redundancy — single connection PoC
 - Multi-language alarm text — LCID hardcoded to 1033 (English)
+- RelationId (raw) column in alarm viewer — D-02: raw 64-bit integer adds no operator value (dropped v1.2)
+- FB type name column — requires GetTypeInformation browse per DB; high complexity
+- Alarm log retention policy (auto-expire) — not yet prioritized
+- Server-side guard preventing active-alarm deletion — client-side confirmation only
 
 ## Context
 
-**Current state (v1.1):**
-- S7CommPlusClient: AlarmThread.cs (~280 LOC), MongoCommands.cs with ack branch, AlarmAck.cs, Common.cs
+**Current state (v1.2):**
+- S7CommPlusClient: AlarmThread.cs, MongoCommands.cs (queued ack via PendingAcks ConcurrentQueue), Common.cs (RelationIdNameMap + PendingAlarmAck), Program.cs (GetListOfDatablocks browse at startup)
 - S7CommPlusDriver submodule: AlarmsHandler.cs with 5 bug fixes + WaitForAlarmNotification + SendAlarmAck
-- MongoDB collection: `s7plusAlarmEvents` — alarm event documents with 15+ fields (ackState fixed, alarmClassName added)
-- AdminUI: S7PlusAlarmsViewerPage.vue (14-column table, auto-refresh, filters, per-row Ack button, per-row Delete button, bulk Delete Filtered button)
-- Backend: `GET /Invoke/auth/listS7PlusAlarms` (returns all fields incl. `_id`, `relationId`, `dbNumber`, `originDbName`) + `POST /Invoke/auth/ackS7PlusAlarm` + `POST /Invoke/auth/deleteS7PlusAlarms` in server_realtime_auth
+- MongoDB collection: `s7plusAlarmEvents` — alarm event documents with 18 fields (incl. relationId, dbNumber, originDbName)
+- AdminUI: S7PlusAlarmsViewerPage.vue (14-column table, auto-refresh, filters, Ack button, per-row Delete button, bulk Delete Filtered button, confirmation dialogs)
+- Backend: `GET /Invoke/auth/listS7PlusAlarms` (returns all fields) + `POST /Invoke/auth/ackS7PlusAlarm` + `POST /Invoke/auth/deleteS7PlusAlarms` in server_realtime_auth
 - Validated live: PLCSIM Advanced V8, TIA Portal v21, S7-1515 PLC, Windows VM
 
 **Known technical debt:**
@@ -80,6 +73,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - No auto-resubscribe after alarm subscription failure mid-session
 - No automated tests (PoC — all Nyquist VALIDATION.md files are draft status)
 - Phase 4 missing VERIFICATION.md (UAT.md covers functional testing)
+- listS7PlusAlarms error paths return HTTP 200 (not 4xx/5xx) — pre-existing json-scada pattern; Vue silently ignores non-array response
 
 ## Constraints
 
@@ -104,6 +98,13 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 | SendAlarmAck routed through alarmConn | Avoids polling contention; AckJob completion notification arrives naturally on alarm subscription connection | ✓ Good — no contention issues |
 | AckJob completion notification (ClassId=3636) skipped in AlarmThread | P2ReturnValue=0x81 handled correctly but PObject attributes are AckJob-specific; skipping avoids KeyNotFoundException in AlarmsDai | ✓ Good — correct fix |
 | PendingAcks ConcurrentQueue for ack dispatch | AlarmThread dequeues and sends ack; MongoCommands awaits TaskCompletionSource; no dedicated third connection | ✓ Good — clean architecture |
+| dbNumber = `relationId & 0xFFFF` (lower 16 bits) | Confirmed by S7CommPlusConnection.cs:1247 — `area = relid >> 16`, `num = relid & 0xffff`; ORIGIN-02 formula in REQUIREMENTS.md was wrong (`>> 16`) | ✓ Good — correct extraction confirmed |
+| Browse on tag connection (srv.connection) before alarm thread start | alarmConn does not exist yet at this point; browse is a one-time startup operation | ✓ Good — no ordering issue |
+| Empty-string fallback for originDbName (not null) | Consistent schema for API consumers; `""` signals unknown DB without requiring null checks | ✓ Good — clean consumer contract |
+| HTTP 204 No Content on delete success | Standard REST pattern for delete; no body needed | ✓ Good — Phase 8 ignores response body |
+| Empty filter guard rejects `{ filter: {} }` with 400 | Prevents accidental full-collection wipe | ✓ Good — defensive guard in place |
+| RelationId column intentionally omitted from alarm viewer (D-02) | Raw 64-bit integer adds no operator value; origin is already human-readable via originDbName | ✓ Good — confirmed right call |
+| NativeDoubleSerializer removed from rtCommand | ae59194e approach: standard BSON double deserializer sufficient for command fields | ✓ Good — no issues observed |
 
 ---
 ## Evolution
@@ -124,4 +125,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 — Phase 7 complete: `_id` + origin fields exposed in alarm list API; `deleteS7PlusAlarms` endpoint added with admin guard*
+*Last updated: 2026-03-24 — v1.2 milestone complete: alarm origin enrichment + history deletion shipped*

@@ -45,8 +45,57 @@
 
 ---
 
+## Milestone: v1.2 — Alarm Origin & Cleanup
+
+**Shipped:** 2026-03-24
+**Phases:** 4 | **Plans:** 4
+
+### What Was Built
+
+- Driver stores `relationId` (BsonInt64) and `dbNumber` in every alarm document — PLC origin identifiers captured at write time without protocol overhead
+- Driver builds a RelationId→DB-name map at startup via `GetListOfDatablocks`; alarm viewer gains `originDbName` (TIA Portal datablock name) without any per-alarm PLC query
+- `listS7PlusAlarms` API now returns `_id`; new `POST /Invoke/auth/deleteS7PlusAlarms` with admin guard handles both single-row and bulk delete (HTTP 204)
+- Alarm viewer gains Origin DB Name + DB Number columns; per-row delete (optimistic removal) and bulk "Delete Filtered (N)" with confirmation dialogs
+- Phase 4 Ack button recovered via cherry-pick after branch divergence — three commits stranded on an unmerged branch since Phase 3 were identified and cherry-picked onto the Phase 8 tip
+
+### What Worked
+
+- **Phase isolation at the right granularity** — splitting driver fields (Phase 5), startup browse (Phase 6), backend API (Phase 7), and frontend (Phase 8) allowed each to be planned, executed, and verified independently; no cross-phase rework needed
+- **Empty-string fallback pattern** — choosing `""` over `null` for `originDbName` when DB not in map gave Phase 7/8 consumers a clean contract (no null checks needed anywhere downstream)
+- **Integration checker** caught the DELETE-03 asymmetry (filter-path backend with no UI caller) cleanly — confirmed it was intentional before archiving
+- **VERIFICATION.md human-gating** worked well: the 5 human items identified across phases (build, live PLC, auth guard) were exactly the right things to flag; none blocked milestone completion since code correctness was separately confirmed
+
+### What Was Inefficient
+
+- **Phase 4 branch divergence** — the biggest time sink of the milestone. Phase 4's ack commits existed on an unmerged submodule branch; Phases 5–8 were built on a tip that never included them. Cherry-picking onto Phase 8 required resolving 5 conflict blocks across 3 files and re-verifying correctness. Prevention: run `git submodule status` for `+` prefix before starting each phase; run `/gsd:progress` between milestones.
+- **Merge conflict markers committed to fork** — during conflict resolution, `git add` accepted files with unresolved markers (git does not validate conflict-marker absence). The markers were committed and pushed before being caught in the IDE. Prevention: grep for `<<<<<<<` after resolving before staging.
+- **REQUIREMENTS.md checkboxes not updated post-Phase 8** — 5 checkboxes remained `[ ]` after Phase 8 execution; had to note them as "stale" in the audit rather than simply reading the file. Prevention: update REQUIREMENTS.md as part of the phase SUMMARY commit.
+- **SUMMARY.md frontmatter `requirements_completed` not populated** — only Phase 5 had this field set; the 3-source cross-reference fell back to VERIFICATION.md for most requirements. Prevention: gsd-executor should be reminded to fill `requirements_completed` frontmatter.
+
+### Patterns Established
+
+- `GetListOfDatablocks` at driver startup (before alarm thread start) is the correct pattern for any PLC browse that feeds alarm document enrichment — browse on `srv.connection`, not `alarmConn` (alarmConn doesn't exist yet)
+- Optimistic UI removal: snapshot IDs before mutating `alarms.value` to avoid computed recomputation race in `executeDeleteFiltered`
+- `app.post` (not `app.use`) for mutation endpoints — prevents accidental GET routing to delete handler
+
+### Key Lessons
+
+1. **Verify submodule pointer before every phase.** `git submodule status` showing `+` means the superproject points to a different commit than HEAD. This is the root cause of the Phase 4 branch divergence.
+2. **Grep for conflict markers before committing.** `git add` accepts files containing `<<<<<<<`. Always run `grep -rn "<<<<<<" <files>` after resolving before staging.
+3. **The filter-path backend API (DELETE-03) had no UI caller** — a reminder that backend capabilities built "for completeness" will sit unused until explicitly wired to a UI. Only build what Phase N+1 actually needs.
+
+### Cost Observations
+
+- Sessions: ~3 (Phase 5+6 execution, Phase 7+8 execution, branch recovery + conflict resolution)
+- Phase 5: re-verification loop due to submodule pointer mismatch added ~30 min
+- Phase 8: branch recovery cherry-pick added ~50 min (largest unexpected overhead)
+- Phases 6, 7: automated execution very fast (~2 min and ~15 min respectively)
+
+---
+
 ## Cross-Milestone Trends
 
 | Milestone | Phases | Plans | Bugs Found in UAT | Post-Execution Fixes |
 |-----------|--------|-------|-------------------|----------------------|
 | v1.0 PoC  | 1      | 2     | 1 (timeout exit)  | 4 (timeout, log level, additionalTexts, placeholder resolution) |
+| v1.2 Origin & Cleanup | 4 | 4 | 0 (no live UAT) | 1 (Phase 4 branch recovery — cherry-pick of 3 ack commits) |
