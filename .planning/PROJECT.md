@@ -47,7 +47,9 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 - ✓ Store relationID (BsonInt64) and dbNumber (BsonInt32) in s7plusAlarmEvents MongoDB documents — Validated in Phase 5: Driver RelationId Fields
 - ✓ Driver queries PLC at startup to build relationID → DB/FB Name map — Validated in Phase 6: driver-startup-db-name-map
-- [ ] DB Name (and FB Name if available) returned by alarm list API
+- ✓ DB Name (and FB Name if available) returned by alarm list API — Validated in Phase 7: backend-delete-endpoint-id-exposure
+- ✓ `_id` exposed in alarm list API response for delete targeting — Validated in Phase 7: backend-delete-endpoint-id-exposure
+- ✓ `POST /Invoke/auth/deleteS7PlusAlarms` endpoint with admin guard, ids-based and filter-based delete — Validated in Phase 7: backend-delete-endpoint-id-exposure
 - [ ] Alarm viewer displays DB/FB origin as new column(s)
 - [ ] Per-row Delete button in alarm viewer (mirrors Ack button)
 - [ ] Bulk "Delete Filtered" button removes all currently visible rows immediately
@@ -68,7 +70,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - S7CommPlusDriver submodule: AlarmsHandler.cs with 5 bug fixes + WaitForAlarmNotification + SendAlarmAck
 - MongoDB collection: `s7plusAlarmEvents` — alarm event documents with 15+ fields (ackState fixed, alarmClassName added)
 - AdminUI: S7PlusAlarmsViewerPage.vue (11-column table, auto-refresh, filters, per-row Ack button)
-- Backend: `GET /Invoke/auth/listS7PlusAlarms` + `POST /Invoke/auth/ackS7PlusAlarm` in server_realtime_auth
+- Backend: `GET /Invoke/auth/listS7PlusAlarms` (returns all fields incl. `_id`, `relationId`, `dbNumber`, `originDbName`) + `POST /Invoke/auth/ackS7PlusAlarm` + `POST /Invoke/auth/deleteS7PlusAlarms` in server_realtime_auth
 - Validated live: PLCSIM Advanced V8, TIA Portal v21, S7-1515 PLC, Windows VM
 
 **Known technical debt:**
@@ -122,4 +124,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-23 — Phase 6 complete: driver builds RelationId→DB name map at startup and writes originDbName to every alarm document*
+*Last updated: 2026-03-24 — Phase 7 complete: `_id` + origin fields exposed in alarm list API; `deleteS7PlusAlarms` endpoint added with admin guard*
