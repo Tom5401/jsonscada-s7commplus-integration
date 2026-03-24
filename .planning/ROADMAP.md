@@ -92,12 +92,14 @@ Plans:
 **Depends on**: Phase 5, Phase 6 (originDbName in documents), Phase 7 (_id in list response + delete endpoint)
 **Requirements**: ORIGIN-06, ORIGIN-07, ORIGIN-08, DELETE-04, DELETE-05, DELETE-06
 **Success Criteria** (what must be TRUE):
-  1. The alarm viewer table displays three new columns: "Origin DB Name", "DB Number", and "RelationId"; values are populated for alarms triggered after Phase 6 is deployed
+  1. The alarm viewer table displays two new columns: "Origin DB Name" and "DB Number"; values are populated for alarms triggered after Phase 6 is deployed (note: RelationId column intentionally omitted per D-02)
   2. Clicking the per-row Delete button removes that row from the table immediately (optimistic removal); the document is absent from MongoDB on next page load
   3. The "Delete Filtered (N)" toolbar button shows the count of currently visible rows, is disabled when zero rows are visible, and deletes all visible rows when clicked
   4. Attempting to delete a row where `alarmState === 'Coming'` and `ackState === false` shows a confirmation warning before proceeding
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 1 plan
+
+Plans:
+- [ ] 08-01-PLAN.md — Add origin columns, delete column with per-row/bulk delete, and confirmation dialogs
 
 ---
 
@@ -112,4 +114,4 @@ Plans:
 | 5. Driver — RelationId Fields | v1.2 | 0/1 | Planned    |  |
 | 6. Driver — Startup DB Name Map | v1.2 | 1/1 | Complete   | 2026-03-23 |
 | 7. Backend — Delete Endpoint + _id Exposure | v1.2 | 0/1 | Planned    |  |
-| 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 0/? | Not started | - |
+| 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 0/1 | Planned | - |
