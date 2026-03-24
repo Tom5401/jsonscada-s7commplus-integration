@@ -50,9 +50,9 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ DB Name (and FB Name if available) returned by alarm list API — Validated in Phase 7: backend-delete-endpoint-id-exposure
 - ✓ `_id` exposed in alarm list API response for delete targeting — Validated in Phase 7: backend-delete-endpoint-id-exposure
 - ✓ `POST /Invoke/auth/deleteS7PlusAlarms` endpoint with admin guard, ids-based and filter-based delete — Validated in Phase 7: backend-delete-endpoint-id-exposure
-- [ ] Alarm viewer displays DB/FB origin as new column(s)
-- [ ] Per-row Delete button in alarm viewer (mirrors Ack button)
-- [ ] Bulk "Delete Filtered" button removes all currently visible rows immediately
+- ✓ Alarm viewer displays Origin DB Name and DB Number columns — Validated in Phase 8: frontend-delete-buttons-origin-columns
+- ✓ Per-row Delete button in alarm viewer with Coming+unacked warning dialog — Validated in Phase 8: frontend-delete-buttons-origin-columns
+- ✓ Bulk "Delete Filtered" button removes all currently visible rows with confirmation dialog — Validated in Phase 8: frontend-delete-buttons-origin-columns
 
 ### Out of Scope
 
@@ -69,7 +69,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - S7CommPlusClient: AlarmThread.cs (~280 LOC), MongoCommands.cs with ack branch, AlarmAck.cs, Common.cs
 - S7CommPlusDriver submodule: AlarmsHandler.cs with 5 bug fixes + WaitForAlarmNotification + SendAlarmAck
 - MongoDB collection: `s7plusAlarmEvents` — alarm event documents with 15+ fields (ackState fixed, alarmClassName added)
-- AdminUI: S7PlusAlarmsViewerPage.vue (11-column table, auto-refresh, filters, per-row Ack button)
+- AdminUI: S7PlusAlarmsViewerPage.vue (14-column table, auto-refresh, filters, per-row Ack button, per-row Delete button, bulk Delete Filtered button)
 - Backend: `GET /Invoke/auth/listS7PlusAlarms` (returns all fields incl. `_id`, `relationId`, `dbNumber`, `originDbName`) + `POST /Invoke/auth/ackS7PlusAlarm` + `POST /Invoke/auth/deleteS7PlusAlarms` in server_realtime_auth
 - Validated live: PLCSIM Advanced V8, TIA Portal v21, S7-1515 PLC, Windows VM
 
