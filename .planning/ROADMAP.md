@@ -99,7 +99,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 08-01-PLAN.md — Add origin columns, delete column with per-row/bulk delete, and confirmation dialogs
+- [x] 08-01-PLAN.md — Add origin columns, delete column with per-row/bulk delete, and confirmation dialogs
 
 ---
 
