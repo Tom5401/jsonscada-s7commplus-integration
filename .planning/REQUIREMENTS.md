@@ -48,22 +48,22 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRIVER-01 | — | Pending |
-| DRIVER-02 | — | Pending |
-| API-01 | — | Pending |
-| API-02 | — | Pending |
-| VIEWER-01 | — | Pending |
-| VIEWER-02 | — | Pending |
-| VIEWER-03 | — | Pending |
-| VIEWER-04 | — | Pending |
-| VIEWER-05 | — | Pending |
-| VIEWER-06 | — | Pending |
+| DRIVER-01 | Phase 9 | Pending |
+| DRIVER-02 | Phase 9 | Pending |
+| API-01 | Phase 10 | Pending |
+| API-02 | Phase 10 | Pending |
+| VIEWER-01 | Phase 11 | Pending |
+| VIEWER-02 | Phase 11 | Pending |
+| VIEWER-03 | Phase 11 | Pending |
+| VIEWER-04 | Phase 11 | Pending |
+| VIEWER-05 | Phase 11 | Pending |
+| VIEWER-06 | Phase 11 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 10 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 10 ⚠️
+- Mapped to phases: 10 (roadmap complete)
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 — initial v1.3 definition*
+*Last updated: 2026-03-25 — traceability updated after v1.3 roadmap creation*

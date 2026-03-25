@@ -2,11 +2,11 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Alarm Viewer Enhancements & Priority
-status: Defining requirements
-stopped_at: —
+status: Roadmap ready — Phase 9 next
+stopped_at: Phase 9 not started
 last_updated: "2026-03-25T00:00:00.000Z"
 progress:
-  total_phases: 0
+  total_phases: 3
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -23,10 +23,14 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Phase 9 — Driver Enrichment (not started)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-03-25 — Milestone v1.3 started
+Status: Roadmap created — ready to plan Phase 9
+Last activity: 2026-03-25 — v1.3 roadmap created (3 phases, 10 requirements mapped)
+
+```
+Progress: [          ] 0 / 3 phases complete
+```
 
 ## Performance Metrics
 
@@ -61,7 +65,15 @@ None.
 
 ### Blockers/Concerns
 
-None.
+- **DRIVER-02 alarmText state ambiguity:** Research flagged a discrepancy — ARCHITECTURE.md states `alarmText` is currently stored raw, STACK.md states `ResolveAlarmText` is already applied. Phase 9 implementor must confirm exact state of `BuildAlarmDocument` lines 245–246 before making changes to avoid double-substitution.
+
+### Key Implementation Notes (from research)
+
+- Use `key: 'priority'` in Vue headers (NOT `key: 'alarmPriority'`) — field is `priority` in every existing document
+- Use `Promise.allSettled` (NOT `Promise.all`) for bulk ack — `Promise.all` short-circuits on first rejection
+- Do NOT hide Ack button using `isAcknowledgeable` — drive visibility from `ackState === false`; use `isAcknowledgeable` only for Ack All count and display indicator
+- Timestamp formatter must use local-time accessors (`getHours()` not `getUTCHours()`) — verify against TIA Portal display before finalising
+- `createIndex` is idempotent — safe to call at every server startup; must ship in same change as limit removal
 
 ### Quick Tasks Completed
 
@@ -72,8 +84,8 @@ None.
 
 ## Session Continuity
 
-Last activity: 2026-03-25 - Started milestone v1.3: Alarm Viewer Enhancements & Priority
+Last activity: 2026-03-25 — v1.3 roadmap created
 Last session: 2026-03-25
-Stopped at: Defining requirements
+Stopped at: Phase 9 not started
 Resume file: None
-Next action: `/gsd:plan-phase [N]` after roadmap is created
+Next action: `/gsd:plan-phase 9`
