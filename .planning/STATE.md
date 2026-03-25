@@ -2,35 +2,29 @@
 gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: Alarm Viewer Enhancements & Priority
-status: Roadmap ready — Phase 9 next
-stopped_at: Phase 9 not started
-last_updated: "2026-03-25T00:00:00.000Z"
+status: In progress
+stopped_at: "Completed 09-driver-enrichment/09-01-PLAN.md"
+last_updated: "2026-03-25T11:00:00.000Z"
 progress:
   total_phases: 3
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-25)
+See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.3 — Alarm Viewer Enhancements & Priority
+**Current focus:** v1.3 active — Phase 9 complete, Phase 10 (API Cap Removal) next
 
 ## Current Position
 
-Phase: Phase 9 — Driver Enrichment (not started)
-Plan: —
-Status: Roadmap created — ready to plan Phase 9
-Last activity: 2026-03-25 — v1.3 roadmap created (3 phases, 10 requirements mapped)
-
-```
-Progress: [          ] 0 / 3 phases complete
-```
+Phase 9 (Driver Enrichment) complete — 09-01-PLAN.md executed.
+Next: Phase 10 (API Cap Removal).
 
 ## Performance Metrics
 
@@ -39,6 +33,7 @@ Progress: [          ] 0 / 3 phases complete
 - v1.0: 2 plans, 2 days
 - v1.1: 6 plans, 2 days (2026-03-18 → 2026-03-19)
 - v1.2: 4 plans, 2 days (2026-03-23 → 2026-03-24)
+- v1.3: in progress (2026-03-25 → ?)
 
 **By Phase:**
 
@@ -52,6 +47,7 @@ Progress: [          ] 0 / 3 phases complete
 | 6. Driver — Startup DB Name Map | 1/1 | ~2 min |
 | 7. Backend — Delete Endpoint + _id Exposure | 1/1 | ~15 min |
 | 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h (incl. branch recovery) |
+| 9. Driver Enrichment | 1/1 | ~10 min |
 
 ## Accumulated Context
 
@@ -59,21 +55,17 @@ Progress: [          ] 0 / 3 phases complete
 
 See PROJECT.md Key Decisions table for full log.
 
+**v1.3 decisions:**
+- AcknowledgeableClasses as HashSet {33, 37, 39} for O(1) membership check (09-01)
+- alarmText/infoText resolved at write time via ResolveAlarmText(), consistent with additionalTexts (09-01)
+
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-- **DRIVER-02 alarmText state ambiguity:** Research flagged a discrepancy — ARCHITECTURE.md states `alarmText` is currently stored raw, STACK.md states `ResolveAlarmText` is already applied. Phase 9 implementor must confirm exact state of `BuildAlarmDocument` lines 245–246 before making changes to avoid double-substitution.
-
-### Key Implementation Notes (from research)
-
-- Use `key: 'priority'` in Vue headers (NOT `key: 'alarmPriority'`) — field is `priority` in every existing document
-- Use `Promise.allSettled` (NOT `Promise.all`) for bulk ack — `Promise.all` short-circuits on first rejection
-- Do NOT hide Ack button using `isAcknowledgeable` — drive visibility from `ackState === false`; use `isAcknowledgeable` only for Ack All count and display indicator
-- Timestamp formatter must use local-time accessors (`getHours()` not `getUTCHours()`) — verify against TIA Portal display before finalising
-- `createIndex` is idempotent — safe to call at every server startup; must ship in same change as limit removal
+None.
 
 ### Quick Tasks Completed
 
@@ -84,8 +76,8 @@ None.
 
 ## Session Continuity
 
-Last activity: 2026-03-25 — v1.3 roadmap created
+Last activity: 2026-03-25 - Completed 09-01: Driver Enrichment (isAcknowledgeable + resolved alarmText/infoText)
 Last session: 2026-03-25
-Stopped at: Phase 9 not started
+Stopped at: Completed 09-driver-enrichment/09-01-PLAN.md
 Resume file: None
-Next action: `/gsd:plan-phase 9`
+Next action: Execute Phase 10 (API Cap Removal)
