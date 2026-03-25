@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to execute
-stopped_at: "Checkpoint: human-verify task 2 of 11-01-PLAN.md — awaiting browser verification"
-last_updated: "2026-03-25T17:33:49.813Z"
+status: Phase complete — ready for verification
+stopped_at: "Task 2 checkpoint:human-verify — awaiting visual verification of 11-02-PLAN.md"
+last_updated: "2026-03-25T18:02:36.249Z"
 last_activity: 2026-03-25
 progress:
   total_phases: 3
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
 ---
 
 # Project State
@@ -50,6 +50,8 @@ Plan: 2 of 2
 | 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h (incl. branch recovery) |
 | 9. Driver Enrichment | 1/1 | ~10 min |
 | Phase 11-vue-ui-enhancements P01 | 2min | 1 tasks | 1 files |
+| Phase 11-vue-ui-enhancements P01 | ~2min | 2 tasks | 1 files |
+| Phase 11-vue-ui-enhancements P02 | 5 | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -64,6 +66,7 @@ See PROJECT.md Key Decisions table for full log.
 - [Phase 11-vue-ui-enhancements]: formatTimestamp() uses manual Date property extraction for YYYY-MM-DD_HH:MM:SS.mmm in local time
 - [Phase 11-vue-ui-enhancements]: isAcknowledgeable === false strict equality preserves backward compat with pre-Phase 9 alarm documents
 - [Phase 11-vue-ui-enhancements]: currentPage ref + v-model:page on v-data-table; fetchAlarms never resets page — zero-cost page preservation
+- [Phase 11-vue-ui-enhancements]: connectionFilter follows exact same computed pattern as alarmClassFilter; ackAllCount scoped to filteredAlarms; executeAckAll uses alarm.connectionId for ackAlarm call
 
 ### Pending Todos
 
@@ -83,7 +86,7 @@ None.
 ## Session Continuity
 
 Last activity: 2026-03-25
-Last session: 2026-03-25T17:33:49.808Z
-Stopped at: Checkpoint: human-verify task 2 of 11-01-PLAN.md — awaiting browser verification
+Last session: 2026-03-25T18:02:36.242Z
+Stopped at: Task 2 checkpoint:human-verify — awaiting visual verification of 11-02-PLAN.md
 Resume file: None
 Next action: Execute Phase 10 (API Cap Removal)

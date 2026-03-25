@@ -24,8 +24,8 @@
 
 ### Viewer — Filtering & Interaction
 
-- [ ] **VIEWER-04**: Operator can filter alarms by source PLC using a dropdown based on `connectionName`, consistent with existing Status and AlarmClass filter controls
-- [ ] **VIEWER-05**: Operator can acknowledge all currently unacked alarms matching the active filter with a single "Ack All" button, with a confirmation dialog showing the count; each ack is attempted independently so a single failure does not block the rest
+- [x] **VIEWER-04**: Operator can filter alarms by source PLC using a dropdown based on `connectionName`, consistent with existing Status and AlarmClass filter controls
+- [x] **VIEWER-05**: Operator can acknowledge all currently unacked alarms matching the active filter with a single "Ack All" button, with a confirmation dialog showing the count; each ack is attempted independently so a single failure does not block the rest
 - [x] **VIEWER-06**: Operator's current page in the alarm table is preserved across the 5-second auto-refresh cycle (no jump back to page 1 on each poll)
 
 ## Future Requirements
@@ -55,8 +55,8 @@
 | VIEWER-01 | Phase 11 | Complete |
 | VIEWER-02 | Phase 11 | Complete |
 | VIEWER-03 | Phase 11 | Complete |
-| VIEWER-04 | Phase 11 | Pending |
-| VIEWER-05 | Phase 11 | Pending |
+| VIEWER-04 | Phase 11 | Complete |
+| VIEWER-05 | Phase 11 | Complete |
 | VIEWER-06 | Phase 11 | Complete |
 
 **Coverage:**
