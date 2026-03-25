@@ -1,14 +1,23 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find json-scada/src/AdminUI -name .prettierrc*)",
-      "Bash(xargs cat:*)",
-      "Bash(wc -l .planning/codebase/*.md)",
-      "Bash(grep -E '\\(sk-[a-zA-Z0-9]{20,}|sk_live_[a-zA-Z0-9]+|sk_test_[a-zA-Z0-9]+|ghp_[a-zA-Z0-9]{36}|gho_[a-zA-Z0-9]{36}|glpat-[a-zA-Z0-9_-]+|AKIA[A-Z0-9]{16}|xox[baprs]-[a-zA-Z0-9-]+|-----BEGIN.*PRIVATE KEY|eyJ[a-zA-Z0-9_-]+\\\\.eyJ[a-zA-Z0-9_-]+\\\\.\\)' .planning/codebase/*.md)",
-      "Bash(SECRETS_FOUND=true)",
-      "Bash(SECRETS_FOUND=false)",
-      "Bash(echo \"SECRETS_FOUND=$SECRETS_FOUND\")",
-      "Bash(node \"C:/Users/tnielen/.claude/get-shit-done/bin/gsd-tools.cjs\" commit \"docs: map existing codebase\" --files .planning/codebase/*.md)",
+      "Bash(date:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(wc:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(sort:*)",
+      "Bash(grep:*)",
+      "Bash(tr:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git tag:*)",
       "WebSearch",
       "Bash(dotnet build:*)"
     ]
