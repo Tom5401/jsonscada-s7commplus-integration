@@ -88,7 +88,10 @@ Plans:
   4. Operator can select a source PLC from a dropdown to filter the alarm table to alarms from that connection only, consistent with the existing Status and AlarmClass filters
   5. Operator can click "Ack All" to acknowledge all currently unacked, acknowledgeable alarms matching the active filter; a confirmation dialog shows the count before proceeding; a single failed ack does not block remaining acks
   6. After the 5-second auto-refresh, the operator's current page in the alarm table is preserved (no jump back to page 1)
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 11-01-PLAN.md — Display changes: timestamp, priority, ack indicator, column reorder, page preservation
+- [ ] 11-02-PLAN.md — Interaction: source filter dropdown and Ack All bulk action
 **UI hint**: yes
 
 ## Progress
@@ -105,4 +108,4 @@ Plans:
 | 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 1/1 | Complete | 2026-03-24 |
 | 9. Driver Enrichment | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 10. API Cap Removal | v1.3 | 1/1 | Complete    | 2026-03-25 |
-| 11. Vue UI Enhancements | v1.3 | 0/? | Not started | - |
+| 11. Vue UI Enhancements | v1.3 | 0/2 | Not started | - |
