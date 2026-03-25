@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: In progress
-stopped_at: Completed 10-api-cap-removal/10-01-PLAN.md
-last_updated: "2026-03-25T12:05:00.000Z"
+status: Ready to plan
+stopped_at: Completed 09-driver-enrichment/09-01-PLAN.md
+last_updated: "2026-03-25T12:11:41.521Z"
 last_activity: 2026-03-25
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 2
   completed_plans: 2
 ---
@@ -20,12 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.3 active — Phase 10 (API Cap Removal) complete
+**Current focus:** Phase 10 — api-cap-removal
 
 ## Current Position
 
-Phase 10 (API Cap Removal) complete — 10-01-PLAN.md executed.
-Next: Phase 11 (if planned) or milestone closure.
+Phase: 11
+Plan: Not started
 
 ## Performance Metrics
 
@@ -49,7 +49,6 @@ Next: Phase 11 (if planned) or milestone closure.
 | 7. Backend — Delete Endpoint + _id Exposure | 1/1 | ~15 min |
 | 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h (incl. branch recovery) |
 | 9. Driver Enrichment | 1/1 | ~10 min |
-| 10. API Cap Removal | 1/1 | ~2 min |
 
 ## Accumulated Context
 
@@ -61,8 +60,6 @@ See PROJECT.md Key Decisions table for full log.
 
 - AcknowledgeableClasses as HashSet {33, 37, 39} for O(1) membership check (09-01)
 - alarmText/infoText resolved at write time via ResolveAlarmText(), consistent with additionalTexts (09-01)
-- No replacement limit on listS7PlusAlarms — full collection returned, index protects query performance (10-01)
-- Descending createdAt index (not ascending) matches sort direction for optimal scan (10-01)
 
 ### Pending Todos
 
@@ -83,6 +80,6 @@ None.
 
 Last activity: 2026-03-25
 Last session: 2026-03-25
-Stopped at: Completed 10-api-cap-removal/10-01-PLAN.md
+Stopped at: Completed 09-driver-enrichment/09-01-PLAN.md
 Resume file: None
-Next action: Phase 10 complete — check ROADMAP for next phase or run /gsd:complete-milestone
+Next action: Execute Phase 10 (API Cap Removal)
