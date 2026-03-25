@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: Completed 09-driver-enrichment/09-01-PLAN.md
-last_updated: "2026-03-25T12:11:41.521Z"
+status: Ready to execute
+stopped_at: "Checkpoint: human-verify task 2 of 11-01-PLAN.md — awaiting browser verification"
+last_updated: "2026-03-25T17:33:49.813Z"
 last_activity: 2026-03-25
 progress:
   total_phases: 3
   completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 4
+  completed_plans: 3
 ---
 
 # Project State
@@ -20,12 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** Phase 10 — api-cap-removal
+**Current focus:** Phase 11 — vue-ui-enhancements
 
 ## Current Position
 
-Phase: 11
-Plan: Not started
+Phase: 11 (vue-ui-enhancements) — EXECUTING
+Plan: 2 of 2
 
 ## Performance Metrics
 
@@ -49,6 +49,7 @@ Plan: Not started
 | 7. Backend — Delete Endpoint + _id Exposure | 1/1 | ~15 min |
 | 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h (incl. branch recovery) |
 | 9. Driver Enrichment | 1/1 | ~10 min |
+| Phase 11-vue-ui-enhancements P01 | 2min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -60,6 +61,9 @@ See PROJECT.md Key Decisions table for full log.
 
 - AcknowledgeableClasses as HashSet {33, 37, 39} for O(1) membership check (09-01)
 - alarmText/infoText resolved at write time via ResolveAlarmText(), consistent with additionalTexts (09-01)
+- [Phase 11-vue-ui-enhancements]: formatTimestamp() uses manual Date property extraction for YYYY-MM-DD_HH:MM:SS.mmm in local time
+- [Phase 11-vue-ui-enhancements]: isAcknowledgeable === false strict equality preserves backward compat with pre-Phase 9 alarm documents
+- [Phase 11-vue-ui-enhancements]: currentPage ref + v-model:page on v-data-table; fetchAlarms never resets page — zero-cost page preservation
 
 ### Pending Todos
 
@@ -79,7 +83,7 @@ None.
 ## Session Continuity
 
 Last activity: 2026-03-25
-Last session: 2026-03-25
-Stopped at: Completed 09-driver-enrichment/09-01-PLAN.md
+Last session: 2026-03-25T17:33:49.808Z
+Stopped at: Checkpoint: human-verify task 2 of 11-01-PLAN.md — awaiting browser verification
 Resume file: None
 Next action: Execute Phase 10 (API Cap Removal)

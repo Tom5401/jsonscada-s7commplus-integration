@@ -18,15 +18,15 @@
 
 ### Viewer — Display
 
-- [ ] **VIEWER-01**: Operator sees a single combined timestamp column replacing separate Date and Time columns, formatted as `2026-03-24_12:57:10.758` (local time, millisecond precision)
-- [ ] **VIEWER-02**: Operator can sort the alarm table by priority using a sortable Priority column (uses existing `priority` field already in every MongoDB document)
-- [ ] **VIEWER-03**: Operator can see whether each alarm requires acknowledgement or is information-only via an indicator in the alarm viewer (derived from `isAcknowledgeable`; display hint only — Ack button visibility is driven by `ackState`, not this field)
+- [x] **VIEWER-01**: Operator sees a single combined timestamp column replacing separate Date and Time columns, formatted as `2026-03-24_12:57:10.758` (local time, millisecond precision)
+- [x] **VIEWER-02**: Operator can sort the alarm table by priority using a sortable Priority column (uses existing `priority` field already in every MongoDB document)
+- [x] **VIEWER-03**: Operator can see whether each alarm requires acknowledgement or is information-only via an indicator in the alarm viewer (derived from `isAcknowledgeable`; display hint only — Ack button visibility is driven by `ackState`, not this field)
 
 ### Viewer — Filtering & Interaction
 
 - [ ] **VIEWER-04**: Operator can filter alarms by source PLC using a dropdown based on `connectionName`, consistent with existing Status and AlarmClass filter controls
 - [ ] **VIEWER-05**: Operator can acknowledge all currently unacked alarms matching the active filter with a single "Ack All" button, with a confirmation dialog showing the count; each ack is attempted independently so a single failure does not block the rest
-- [ ] **VIEWER-06**: Operator's current page in the alarm table is preserved across the 5-second auto-refresh cycle (no jump back to page 1 on each poll)
+- [x] **VIEWER-06**: Operator's current page in the alarm table is preserved across the 5-second auto-refresh cycle (no jump back to page 1 on each poll)
 
 ## Future Requirements
 
@@ -52,12 +52,12 @@
 | DRIVER-02 | Phase 9 | Pending |
 | API-01 | Phase 10 | Pending |
 | API-02 | Phase 10 | Pending |
-| VIEWER-01 | Phase 11 | Pending |
-| VIEWER-02 | Phase 11 | Pending |
-| VIEWER-03 | Phase 11 | Pending |
+| VIEWER-01 | Phase 11 | Complete |
+| VIEWER-02 | Phase 11 | Complete |
+| VIEWER-03 | Phase 11 | Complete |
 | VIEWER-04 | Phase 11 | Pending |
 | VIEWER-05 | Phase 11 | Pending |
-| VIEWER-06 | Phase 11 | Pending |
+| VIEWER-06 | Phase 11 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 10 total
