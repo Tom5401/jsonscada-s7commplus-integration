@@ -1,5 +1,16 @@
 # Milestones
 
+## v1.3 Alarm Viewer Enhancements (Shipped: 2026-03-25)
+
+**Phases completed:** 3 phases, 4 plans, 3 tasks
+
+**Key accomplishments:**
+
+- Single Timestamp column, sortable Priority column, ack indicator for non-acknowledgeable alarms, and page preservation across auto-refresh added to S7Plus Alarms Viewer.
+- Source PLC filter dropdown and Ack All bulk action added to S7Plus Alarms Viewer — operators can narrow alarms by connection and bulk-acknowledge all unacked+acknowledgeable alarms matching active filters.
+
+---
+
 ## v1.2 Alarm Origin & Cleanup (Shipped: 2026-03-24)
 
 **Phases completed:** 4 phases, 4 plans, 5 tasks

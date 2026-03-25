@@ -6,20 +6,10 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.2 — Alarm origin enrichment and history deletion validated 2026-03-24. Full alarm management loop (subscribe → display → ack → delete) complete.
 
-## Current Milestone: v1.3 Alarm Viewer Enhancements & Priority
+## Shipped: v1.3 Alarm Viewer Enhancements & Priority (2026-03-25)
 
-**Goal:** Enrich alarm data with priority and ackability, improve the viewer with better UX (timestamp, bulk ack, pagination, sorting, source filter), and fix the 200-alarm display cap.
-
-**Target features:**
-- isAcknowledgeable flag derived from AlarmClass (class 33 = true) stored in MongoDB
-- alarmPriority number stored in every alarm document
-- Single timestamp column replacing separate date+time columns (format: 2026-03-24_12:57:10.758)
-- Ack All button — acks all unacked alarms matching current filter
-- Placeholder substitution extended to alarm text and info text (@N%x@ format)
-- Sortable priority column in alarm viewer
-- Source PLC filter (based on connectionName)
-- Pagination in viewer (no API limit, paged display in UI)
-- Fix 200-alarm cap in listS7PlusAlarms API
+All 10 requirements validated. The alarm viewer now shows enriched alarm data with full UX improvements:
+isAcknowledgeable flag, resolved alarm text, no API cap, combined timestamp, sortable priority, ack indicator, source filter, Ack All bulk action, and page preservation.
 
 ## Core Value
 
@@ -68,7 +58,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ### Active
 
-*(v1.3 milestone complete — see REQUIREMENTS.md for any carry-forward items)*
+*(v1.3 complete — define v1.4 requirements with `/gsd:new-milestone`)*
 
 ### Out of Scope
 
@@ -83,9 +73,13 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ## Context
 
-**Current state (v1.3 complete — all 11 phases done):**
-- Phase 11 (Vue UI Enhancements) complete — timestamp column, priority sort, ack indicator, source filter, Ack All bulk action, page preservation all live in S7PlusAlarmsViewerPage.vue
-- v1.3 milestone fully shipped: Driver Enrichment (Phase 9) + API Cap Removal (Phase 10) + Vue UI Enhancements (Phase 11)
+**Current state (v1.3 shipped 2026-03-25):**
+- 11 phases complete across 4 milestones (v1.0–v1.3)
+- Full alarm management loop: subscribe → store with metadata → display → filter/sort → ack → delete
+- S7PlusAlarmsViewerPage.vue: combined timestamp, sortable priority, ack indicator, source filter, Ack All bulk action, page preservation, Delete/Delete Filtered
+- MongoDB `s7plusAlarmEvents`: 18 fields per document including `isAcknowledgeable`, resolved `alarmText`/`infoText`, `priority`, `originDbName`, `dbNumber`, `relationId`
+- API: no alarm count ceiling, `{ createdAt: -1 }` index for query performance
+- Validated against: PLCSIM Advanced V8, TIA Portal v21, S7-1515 PLC, Windows VM
 
 **Last state (v1.2):**
 - S7CommPlusClient: AlarmThread.cs, MongoCommands.cs (queued ack via PendingAcks ConcurrentQueue), Common.cs (RelationIdNameMap + PendingAlarmAck), Program.cs (GetListOfDatablocks browse at startup)
@@ -154,4 +148,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 (Phase 11 complete — v1.3 milestone done)
+*Last updated: 2026-03-25 after v1.3 milestone*
