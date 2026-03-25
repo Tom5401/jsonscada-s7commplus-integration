@@ -93,9 +93,55 @@
 
 ---
 
+## Milestone: v1.3 — Alarm Viewer Enhancements & Priority
+
+**Shipped:** 2026-03-25
+**Phases:** 3 (9–11) | **Plans:** 4
+
+### What Was Built
+
+- C# driver stores `isAcknowledgeable` flag (true for alarmClass 33/37/39) and resolves `alarmText`/`infoText` `@N%x@` placeholder templates at write time (Phase 9)
+- 200-alarm API ceiling removed from `listS7PlusAlarms`; `{ createdAt: -1 }` index on `s7plusAlarmEvents` created at server startup in same commit (Phase 10)
+- S7PlusAlarmsViewerPage.vue: single combined Timestamp column (format `2026-03-24_12:57:10.758`), sortable Priority column, ack indicator dash for non-acknowledgeable alarms, page preservation via `v-model:page` (Phase 11 plan 1)
+- Source PLC filter dropdown populated from live `connectionName` values; Ack All button with count + confirmation dialog; sequential ack loop (one failure non-blocking) (Phase 11 plan 2)
+
+### What Worked
+
+- **Human-verify checkpoints** were the right pattern for Vue UI changes — each plan's Task 2 paused for browser confirmation before writing the SUMMARY. Caught nothing (code was correct), but the gate gave confidence without over-engineering tests for a PoC frontend.
+- **Research-first paid off for Phase 11** — researcher found the `v-model:page` API directly in installed Vuetify 3.10.12 source and confirmed `isAcknowledgeable === false` strict equality behavior for pre-Phase-9 documents. No runtime surprises.
+- **Two-plan wave split for Phase 11** — display changes (plan 1) and interaction additions (plan 2) were independent enough to review separately, and plan 2 explicitly read plan 1's SUMMARY so it saw the correct post-plan-1 file state.
+- **Single-file phase** — all 6 requirements landed in one Vue component. The planner kept plan scope to ~7 tasks per plan; executor had clear, committed steps without context overload.
+
+### What Was Inefficient
+
+- **REQUIREMENTS.md checkboxes for DRIVER-01, DRIVER-02, API-01, API-02 were never updated** — discovered only at milestone completion. These phases were marked complete in ROADMAP/STATE but the checkbox list was stale. Same pattern as v1.2. Prevention: make updating `REQUIREMENTS.md` checkboxes a mandatory step in the phase-complete commit hook.
+- **HUMAN-UAT.md persists with `status: partial`** after approved checkpoints — the UAT file was created correctly but will surface as "incomplete" in `/gsd:progress` until `/gsd:verify-work` is run. The checkpoint approval during execution is sufficient for a PoC; the UAT file is a bureaucratic artifact in this context.
+
+### Patterns Established
+
+- `formatTimestamp()` for combined timestamp: `toLocaleDateString('en-CA')` + `_` + `toLocaleTimeString('en-GB', { hour12: false })` + `.` + milliseconds — locale-explicit, no `toISOString()` (UTC conversion)
+- `isAcknowledgeable === false` strict equality in template slots (not `!isAcknowledgeable`) — intentional: pre-Phase-9 documents with `undefined` fall through to existing behavior
+- `filteredAlarms` computed as the single source of truth for all filters and Ack All count — adding a new filter is one change in one computed property
+
+### Key Lessons
+
+1. **Update REQUIREMENTS.md checkboxes at phase completion, not milestone.** Finding stale checkboxes at milestone close requires manual audit. The phase-complete CLI should validate or prompt for this.
+2. **PoC frontend testing: grep-based `<acceptance_criteria>` + human checkpoint is sufficient.** Vitest setup would have added ~1 phase of scaffolding for 6 requirements that were fully verifiable by eye in 5 minutes.
+3. **Page preservation via `v-model:page` is trivially safe** — `fetchAlarms` never touches `currentPage`; adding the binding is a two-line change. Research confirmed this before planning, preventing any over-engineering.
+
+### Cost Observations
+
+- Sessions: 1 (planning + execution in a single context)
+- All 3 phases executed same day (2026-03-25)
+- Phase 11 planner hit rate limit mid-run; retry was immediate and successful — no workflow disruption
+- Human checkpoint round-trips: 2 (one per plan in Phase 11); both approved on first pass
+
+---
+
 ## Cross-Milestone Trends
 
 | Milestone | Phases | Plans | Bugs Found in UAT | Post-Execution Fixes |
 |-----------|--------|-------|-------------------|----------------------|
 | v1.0 PoC  | 1      | 2     | 1 (timeout exit)  | 4 (timeout, log level, additionalTexts, placeholder resolution) |
 | v1.2 Origin & Cleanup | 4 | 4 | 0 (no live UAT) | 1 (Phase 4 branch recovery — cherry-pick of 3 ack commits) |
+| v1.3 Alarm Viewer Enhancements | 3 | 4 | 0 (human checkpoints approved first pass) | 0 |
