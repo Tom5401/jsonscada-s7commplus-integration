@@ -1,29 +1,32 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Alarm Origin & Cleanup
-status: Milestone complete
-stopped_at: v1.2 milestone archived 2026-03-24
-last_updated: "2026-03-24T14:00:00.000Z"
+milestone: v1.3
+milestone_name: Alarm Viewer Enhancements & Priority
+status: Defining requirements
+stopped_at: —
+last_updated: "2026-03-25T00:00:00.000Z"
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-24)
+See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.2 complete — run `/gsd:new-milestone` to plan next milestone
+**Current focus:** v1.3 — Alarm Viewer Enhancements & Priority
 
 ## Current Position
 
-Milestone v1.2 archived. All phases complete. No active work.
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-25 — Milestone v1.3 started
 
 ## Performance Metrics
 
@@ -58,7 +61,7 @@ None.
 
 ### Blockers/Concerns
 
-None — milestone complete.
+None.
 
 ### Quick Tasks Completed
 
@@ -69,8 +72,8 @@ None — milestone complete.
 
 ## Session Continuity
 
-Last activity: 2026-03-24 - Completed quick task 260324-l5d: S7Plus alarm MongoDB entries include connectionName, viewer reads directly from alarm doc
-Last session: 2026-03-24
-Stopped at: v1.2 milestone complete
+Last activity: 2026-03-25 - Started milestone v1.3: Alarm Viewer Enhancements & Priority
+Last session: 2026-03-25
+Stopped at: Defining requirements
 Resume file: None
-Next action: `/gsd:new-milestone` to start v1.3 planning
+Next action: `/gsd:plan-phase [N]` after roadmap is created

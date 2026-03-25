@@ -6,6 +6,21 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.2 — Alarm origin enrichment and history deletion validated 2026-03-24. Full alarm management loop (subscribe → display → ack → delete) complete.
 
+## Current Milestone: v1.3 Alarm Viewer Enhancements & Priority
+
+**Goal:** Enrich alarm data with priority and ackability, improve the viewer with better UX (timestamp, bulk ack, pagination, sorting, source filter), and fix the 200-alarm display cap.
+
+**Target features:**
+- isAcknowledgeable flag derived from AlarmClass (class 33 = true) stored in MongoDB
+- alarmPriority number stored in every alarm document
+- Single timestamp column replacing separate date+time columns (format: 2026-03-24_12:57:10.758)
+- Ack All button — acks all unacked alarms matching current filter
+- Placeholder substitution extended to alarm text and info text (@N%x@ format)
+- Sortable priority column in alarm viewer
+- Source PLC filter (based on connectionName)
+- Pagination in viewer (no API limit, paged display in UI)
+- Fix 200-alarm cap in listS7PlusAlarms API
+
 ## Core Value
 
 Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values), so operators see real events the moment they occur.
@@ -43,7 +58,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ### Active
 
-*(None — all v1.2 requirements delivered. See /gsd:new-milestone for next milestone planning.)*
+*(v1.3 requirements being defined — see REQUIREMENTS.md)*
 
 ### Out of Scope
 
@@ -125,4 +140,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 — v1.2 milestone complete: alarm origin enrichment + history deletion shipped*
+*Last updated: 2026-03-25 — v1.3 milestone started: alarm viewer enhancements & priority*
