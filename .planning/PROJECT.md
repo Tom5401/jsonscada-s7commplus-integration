@@ -57,6 +57,8 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ Bulk "Delete Filtered" button removes all currently visible rows with confirmation dialog — v1.2
 - ✓ `isAcknowledgeable` boolean stored in every alarm document (true for alarmClass 33/37/39) — v1.3 Phase 9
 - ✓ `alarmText` and `infoText` resolved from `@N%x@` placeholder templates at write time — v1.3 Phase 9
+- ✓ `listS7PlusAlarms` returns all alarm documents (no 200-alarm ceiling) — Validated in Phase 10: api-cap-removal
+- ✓ `{ createdAt: -1 }` index on `s7plusAlarmEvents` created at server startup for query performance — Validated in Phase 10: api-cap-removal
 
 ### Active
 
@@ -75,9 +77,9 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ## Context
 
-**Current state (v1.3 Phase 9 complete):**
-- Phase 9 (Driver Enrichment) complete — `isAcknowledgeable` and resolved alarm text fields active in `BuildAlarmDocument()`
-- Next: Phase 10 (API Cap Removal) — remove 200-alarm limit, add MongoDB index
+**Current state (v1.3 Phase 10 complete):**
+- Phase 10 (API Cap Removal) complete — `listS7PlusAlarms` returns all alarms, `{ createdAt: -1 }` index on `s7plusAlarmEvents` active
+- Next: Phase 11 (Vue UI Enhancements) — pagination, sorting, source filter, bulk ack, timestamp column improvements
 
 **Last state (v1.2):**
 - S7CommPlusClient: AlarmThread.cs, MongoCommands.cs (queued ack via PendingAcks ConcurrentQueue), Common.cs (RelationIdNameMap + PendingAlarmAck), Program.cs (GetListOfDatablocks browse at startup)
@@ -146,4 +148,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25
+*Last updated: 2026-03-25 (Phase 10 complete)
