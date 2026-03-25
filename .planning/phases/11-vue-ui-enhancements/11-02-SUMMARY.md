@@ -53,7 +53,7 @@ completed: 2026-03-25
 - **Duration:** ~5 min
 - **Started:** 2026-03-25T17:58:52Z
 - **Completed:** 2026-03-25T18:03:00Z
-- **Tasks:** 1/2 (Task 2 is human-verify checkpoint — awaiting visual verification)
+- **Tasks:** 2/2
 - **Files modified:** 1
 
 ## Accomplishments
@@ -70,7 +70,8 @@ completed: 2026-03-25
 
 1. **Task 1: Add source filter dropdown, Ack All button, and confirmation dialog** - `30840511` (feat)
 
-**Plan metadata commit:** (pending — awaiting human-verify checkpoint at Task 2)
+2. **Task 2: Verify source filter and Ack All in browser** — human-verify checkpoint, approved by operator
+**Plan metadata commit:** f04974b (docs)
 
 ## Files Created/Modified
 
@@ -98,5 +99,5 @@ None — all data flows from `alarms.value` through `filteredAlarms` computed. N
 
 ## Next Phase Readiness
 
-- Task 2 (human-verify checkpoint) requires visual verification in browser
-- After approval: state updates and final metadata commit complete this plan and phase 11
+- Task 2 (human-verify checkpoint) approved — operator visually confirmed source filter, Ack All button, and confirmation dialog all function correctly in browser
+- Phase 11 complete — all 2/2 plans done, v1.3 milestone ready for close-out
