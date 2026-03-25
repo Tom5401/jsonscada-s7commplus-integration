@@ -61,7 +61,9 @@ Full details: [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
   2. The `alarmText` field in a new alarm document contains the resolved text (e.g. "Motor speed: 1500 rpm") not the raw template (e.g. "Motor speed: @N%1@")
   3. The `infoText` field in a new alarm document contains the resolved text, not the raw `@N%x@` placeholder template
   4. Existing (pre-v1.3) alarm documents are unaffected — no migration performed
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 09-01-PLAN.md — Add isAcknowledgeable field and resolve alarmText/infoText placeholders
 
 ### Phase 10: API Cap Removal
 **Goal**: The alarm list API returns the full alarm collection and MongoDB query performance is protected by an index
@@ -99,6 +101,6 @@ Full details: [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
 | 6. Driver — Startup DB Name Map | v1.2 | 1/1 | Complete | 2026-03-23 |
 | 7. Backend — Delete Endpoint + _id Exposure | v1.2 | 1/1 | Complete | 2026-03-24 |
 | 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 1/1 | Complete | 2026-03-24 |
-| 9. Driver Enrichment | v1.3 | 0/? | Not started | - |
+| 9. Driver Enrichment | v1.3 | 0/1 | Not started | - |
 | 10. API Cap Removal | v1.3 | 0/? | Not started | - |
 | 11. Vue UI Enhancements | v1.3 | 0/? | Not started | - |
