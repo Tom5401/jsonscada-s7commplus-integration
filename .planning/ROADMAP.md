@@ -73,7 +73,9 @@ Plans:
   1. A MongoDB collection with more than 200 alarm documents returns all documents (up to the raised ceiling) when the alarm viewer loads
   2. The `{ createdAt: -1 }` index exists on `s7plusAlarmEvents` after server startup — verifiable via `db.s7plusAlarmEvents.getIndexes()`
   3. The API change and index creation ship as a single atomic change (same commit / same deployment)
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 10-01-PLAN.md — Remove .limit(200) and add createdAt index on s7plusAlarmEvents
 
 ### Phase 11: Vue UI Enhancements
 **Goal**: Operators can view, filter, sort, and bulk-acknowledge alarms through a more informative and usable alarm viewer
@@ -102,5 +104,5 @@ Plans:
 | 7. Backend — Delete Endpoint + _id Exposure | v1.2 | 1/1 | Complete | 2026-03-24 |
 | 8. Frontend — Delete Buttons + Origin Columns | v1.2 | 1/1 | Complete | 2026-03-24 |
 | 9. Driver Enrichment | v1.3 | 1/1 | Complete | 2026-03-25 |
-| 10. API Cap Removal | v1.3 | 0/? | Not started | - |
+| 10. API Cap Removal | v1.3 | 0/1 | Not started | - |
 | 11. Vue UI Enhancements | v1.3 | 0/? | Not started | - |
