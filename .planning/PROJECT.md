@@ -59,10 +59,16 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ `alarmText` and `infoText` resolved from `@N%x@` placeholder templates at write time — v1.3 Phase 9
 - ✓ `listS7PlusAlarms` returns all alarm documents (no 200-alarm ceiling) — Validated in Phase 10: api-cap-removal
 - ✓ `{ createdAt: -1 }` index on `s7plusAlarmEvents` created at server startup for query performance — Validated in Phase 10: api-cap-removal
+- ✓ Single Timestamp column (format `2026-03-24_12:57:10.758`) replaces separate Date+Time columns — Validated in Phase 11: vue-ui-enhancements
+- ✓ Priority column in alarm viewer, sortable by clicking the header — Validated in Phase 11: vue-ui-enhancements
+- ✓ Ack indicator: alarms with `isAcknowledgeable === false` show `-` in Acknowledge column — Validated in Phase 11: vue-ui-enhancements
+- ✓ Source PLC filter dropdown, consistent with Status and Alarm Class filters — Validated in Phase 11: vue-ui-enhancements
+- ✓ Ack All bulk action with confirmation dialog showing count; sequential loop, single failure non-blocking — Validated in Phase 11: vue-ui-enhancements
+- ✓ Page preserved across 5-second auto-refresh via `v-model:page` — Validated in Phase 11: vue-ui-enhancements
 
 ### Active
 
-*(v1.3 requirements being defined — see REQUIREMENTS.md)*
+*(v1.3 milestone complete — see REQUIREMENTS.md for any carry-forward items)*
 
 ### Out of Scope
 
@@ -77,9 +83,9 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ## Context
 
-**Current state (v1.3 Phase 10 complete):**
-- Phase 10 (API Cap Removal) complete — `listS7PlusAlarms` returns all alarms, `{ createdAt: -1 }` index on `s7plusAlarmEvents` active
-- Next: Phase 11 (Vue UI Enhancements) — pagination, sorting, source filter, bulk ack, timestamp column improvements
+**Current state (v1.3 complete — all 11 phases done):**
+- Phase 11 (Vue UI Enhancements) complete — timestamp column, priority sort, ack indicator, source filter, Ack All bulk action, page preservation all live in S7PlusAlarmsViewerPage.vue
+- v1.3 milestone fully shipped: Driver Enrichment (Phase 9) + API Cap Removal (Phase 10) + Vue UI Enhancements (Phase 11)
 
 **Last state (v1.2):**
 - S7CommPlusClient: AlarmThread.cs, MongoCommands.cs (queued ack via PendingAcks ConcurrentQueue), Common.cs (RelationIdNameMap + PendingAlarmAck), Program.cs (GetListOfDatablocks browse at startup)
@@ -148,4 +154,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 (Phase 10 complete)
+*Last updated: 2026-03-25 (Phase 11 complete — v1.3 milestone done)
