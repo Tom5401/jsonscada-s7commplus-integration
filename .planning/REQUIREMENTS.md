@@ -1,0 +1,69 @@
+# Requirements: S7CommPlus Alarm Subscriptions for json-scada
+
+**Defined:** 2026-03-25
+**Milestone:** v1.3 — Alarm Viewer Enhancements & Priority
+**Core Value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
+
+## v1.3 Requirements
+
+### Driver / MongoDB Enrichment
+
+- [ ] **DRIVER-01**: Operator sees alarms stored with `isAcknowledgeable` boolean (`alarmClass == 33` → true; all other classes → false)
+- [ ] **DRIVER-02**: Operator sees `alarmText` and `infoText` fields with TIA Portal `@N%x@` placeholders resolved at alarm write time — same `ResolveAlarmText(template, av)` call already used for `additionalTexts` in `BuildAlarmDocument()` (lines 212–220); both fields currently stored raw at lines 245–246)
+
+### Backend API
+
+- [ ] **API-01**: Alarm viewer loads the full alarm collection without hitting a hard count ceiling (remove `.limit(200)` from `listS7PlusAlarms`)
+- [ ] **API-02**: MongoDB `{ createdAt: -1 }` index exists at server startup to maintain query performance after cap removal (must ship in the same change as API-01)
+
+### Viewer — Display
+
+- [ ] **VIEWER-01**: Operator sees a single combined timestamp column replacing separate Date and Time columns, formatted as `2026-03-24_12:57:10.758` (local time, millisecond precision)
+- [ ] **VIEWER-02**: Operator can sort the alarm table by priority using a sortable Priority column (uses existing `priority` field already in every MongoDB document)
+- [ ] **VIEWER-03**: Operator can see whether each alarm requires acknowledgement or is information-only via an indicator in the alarm viewer (derived from `isAcknowledgeable`; display hint only — Ack button visibility is driven by `ackState`, not this field)
+
+### Viewer — Filtering & Interaction
+
+- [ ] **VIEWER-04**: Operator can filter alarms by source PLC using a dropdown based on `connectionName`, consistent with existing Status and AlarmClass filter controls
+- [ ] **VIEWER-05**: Operator can acknowledge all currently unacked alarms matching the active filter with a single "Ack All" button, with a confirmation dialog showing the count; each ack is attempted independently so a single failure does not block the rest
+- [ ] **VIEWER-06**: Operator's current page in the alarm table is preserved across the 5-second auto-refresh cycle (no jump back to page 1 on each poll)
+
+## Future Requirements
+
+*(None identified — all proposed features are in scope for v1.3)*
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| alarmPriority as new MongoDB field | `priority` already stored in every document since v1.2 Phase 5 — no driver change needed; viewer work only |
+| infoText-only substitution | Both alarmText and infoText confirmed raw in BuildAlarmDocument() lines 245–246; DRIVER-02 covers both |
+| Server-side pagination | PoC scale; client-side pagination sufficient with index in place |
+| Alarm log retention / auto-expire | Not yet prioritised |
+| Auto-resubscribe after alarm subscription failure | Tech debt, not v1.3 scope |
+| Priority chip colour coding | Only valuable if PoC PLC actually uses varied priority values — defer until confirmed |
+| Hiding Ack button for non-acknowledgeable alarms | Risk: alarm classes outside known set (33, 37, 39, 43) may still expect ack; gate Ack All count on isAcknowledgeable, not Ack button visibility |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| DRIVER-01 | — | Pending |
+| DRIVER-02 | — | Pending |
+| API-01 | — | Pending |
+| API-02 | — | Pending |
+| VIEWER-01 | — | Pending |
+| VIEWER-02 | — | Pending |
+| VIEWER-03 | — | Pending |
+| VIEWER-04 | — | Pending |
+| VIEWER-05 | — | Pending |
+| VIEWER-06 | — | Pending |
+
+**Coverage:**
+- v1.3 requirements: 10 total
+- Mapped to phases: 0 (roadmap pending)
+- Unmapped: 10 ⚠️
+
+---
+*Requirements defined: 2026-03-25*
+*Last updated: 2026-03-25 — initial v1.3 definition*
