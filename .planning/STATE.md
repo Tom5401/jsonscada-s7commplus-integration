@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.2
-milestone_name: Alarm Origin & Cleanup
-status: Milestone complete
-stopped_at: v1.2 milestone archived 2026-03-24
-last_updated: "2026-03-24T14:00:00.000Z"
+milestone: v1.0
+milestone_name: milestone
+status: Ready to plan
+stopped_at: Completed 09-driver-enrichment/09-01-PLAN.md
+last_updated: "2026-03-25T11:37:44.103Z"
+last_activity: 2026-03-25
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # Project State
@@ -19,11 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.2 complete — run `/gsd:new-milestone` to plan next milestone
+**Current focus:** v1.3 active — Phase 9 complete, Phase 10 (API Cap Removal) next
 
 ## Current Position
 
-Milestone v1.2 archived. All phases complete. No active work.
+Phase 9 (Driver Enrichment) complete — 09-01-PLAN.md executed.
+Next: Phase 10 (API Cap Removal).
 
 ## Performance Metrics
 
@@ -32,6 +34,7 @@ Milestone v1.2 archived. All phases complete. No active work.
 - v1.0: 2 plans, 2 days
 - v1.1: 6 plans, 2 days (2026-03-18 → 2026-03-19)
 - v1.2: 4 plans, 2 days (2026-03-23 → 2026-03-24)
+- v1.3: in progress (2026-03-25 → ?)
 
 **By Phase:**
 
@@ -45,6 +48,7 @@ Milestone v1.2 archived. All phases complete. No active work.
 | 6. Driver — Startup DB Name Map | 1/1 | ~2 min |
 | 7. Backend — Delete Endpoint + _id Exposure | 1/1 | ~15 min |
 | 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h (incl. branch recovery) |
+| 9. Driver Enrichment | 1/1 | ~10 min |
 
 ## Accumulated Context
 
@@ -52,13 +56,18 @@ Milestone v1.2 archived. All phases complete. No active work.
 
 See PROJECT.md Key Decisions table for full log.
 
+**v1.3 decisions:**
+
+- AcknowledgeableClasses as HashSet {33, 37, 39} for O(1) membership check (09-01)
+- alarmText/infoText resolved at write time via ResolveAlarmText(), consistent with additionalTexts (09-01)
+
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
 
-None — milestone complete.
+None.
 
 ### Quick Tasks Completed
 
@@ -69,8 +78,8 @@ None — milestone complete.
 
 ## Session Continuity
 
-Last activity: 2026-03-24 - Completed quick task 260324-l5d: S7Plus alarm MongoDB entries include connectionName, viewer reads directly from alarm doc
-Last session: 2026-03-24
-Stopped at: v1.2 milestone complete
+Last activity: 2026-03-25
+Last session: 2026-03-25
+Stopped at: Completed 09-driver-enrichment/09-01-PLAN.md
 Resume file: None
-Next action: `/gsd:new-milestone` to start v1.3 planning
+Next action: Execute Phase 10 (API Cap Removal)

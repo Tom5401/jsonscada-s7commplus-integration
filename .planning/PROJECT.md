@@ -6,6 +6,21 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.2 — Alarm origin enrichment and history deletion validated 2026-03-24. Full alarm management loop (subscribe → display → ack → delete) complete.
 
+## Current Milestone: v1.3 Alarm Viewer Enhancements & Priority
+
+**Goal:** Enrich alarm data with priority and ackability, improve the viewer with better UX (timestamp, bulk ack, pagination, sorting, source filter), and fix the 200-alarm display cap.
+
+**Target features:**
+- isAcknowledgeable flag derived from AlarmClass (class 33 = true) stored in MongoDB
+- alarmPriority number stored in every alarm document
+- Single timestamp column replacing separate date+time columns (format: 2026-03-24_12:57:10.758)
+- Ack All button — acks all unacked alarms matching current filter
+- Placeholder substitution extended to alarm text and info text (@N%x@ format)
+- Sortable priority column in alarm viewer
+- Source PLC filter (based on connectionName)
+- Pagination in viewer (no API limit, paged display in UI)
+- Fix 200-alarm cap in listS7PlusAlarms API
+
 ## Core Value
 
 Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values), so operators see real events the moment they occur.
@@ -40,10 +55,12 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ Alarm viewer displays Origin DB Name and DB Number columns — v1.2
 - ✓ Per-row Delete button in alarm viewer with Coming+unacked warning dialog — v1.2
 - ✓ Bulk "Delete Filtered" button removes all currently visible rows with confirmation dialog — v1.2
+- ✓ `isAcknowledgeable` boolean stored in every alarm document (true for alarmClass 33/37/39) — v1.3 Phase 9
+- ✓ `alarmText` and `infoText` resolved from `@N%x@` placeholder templates at write time — v1.3 Phase 9
 
 ### Active
 
-*(None — all v1.2 requirements delivered. See /gsd:new-milestone for next milestone planning.)*
+*(v1.3 requirements being defined — see REQUIREMENTS.md)*
 
 ### Out of Scope
 
@@ -58,7 +75,11 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ## Context
 
-**Current state (v1.2):**
+**Current state (v1.3 Phase 9 complete):**
+- Phase 9 (Driver Enrichment) complete — `isAcknowledgeable` and resolved alarm text fields active in `BuildAlarmDocument()`
+- Next: Phase 10 (API Cap Removal) — remove 200-alarm limit, add MongoDB index
+
+**Last state (v1.2):**
 - S7CommPlusClient: AlarmThread.cs, MongoCommands.cs (queued ack via PendingAcks ConcurrentQueue), Common.cs (RelationIdNameMap + PendingAlarmAck), Program.cs (GetListOfDatablocks browse at startup)
 - S7CommPlusDriver submodule: AlarmsHandler.cs with 5 bug fixes + WaitForAlarmNotification + SendAlarmAck
 - MongoDB collection: `s7plusAlarmEvents` — alarm event documents with 18 fields (incl. relationId, dbNumber, originDbName)
@@ -125,4 +146,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-24 — v1.2 milestone complete: alarm origin enrichment + history deletion shipped*
+*Last updated: 2026-03-25
