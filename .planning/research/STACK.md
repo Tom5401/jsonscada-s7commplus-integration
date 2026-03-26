@@ -1,260 +1,144 @@
-# Stack Research
+# Technology Stack
 
-**Domain:** S7CommPlus alarm viewer enhancements — additions to existing v1.2 driver (v1.3 milestone)
-**Researched:** 2026-03-25
-**Confidence:** HIGH — all findings verified directly from submodule source code and existing project files
+**Project:** v1.4 Tag Tree Browser (DatablockBrowser + TagTreeBrowser)
+**Researched:** 2026-03-26
+**Confidence:** HIGH — Vuetify version confirmed from installed node_modules; v-treeview availability confirmed from official docs and GitHub issue history; router pattern confirmed from Vue Router official docs
 
 ---
 
 ## Summary of New Stack Needs
 
-v1.3 adds enrichment, UX improvements, and bulk ack to an already-validated stack. **No new npm packages or NuGet packages are required.** Every API, field, and component needed already exists. The sections below cover only what is new or changed for v1.3.
+v1.4 adds two new AdminUI pages and new backend endpoints. The core stack does not change. The key question was whether Vuetify 3 has a native tree component — it does. **No new npm packages are required.** `v-treeview` ships with Vuetify 3 and is already available in the project's installed version (3.10.12).
 
 ---
 
-## 1. S7CommPlus Protocol — Priority and isAcknowledgeable
+## Installed Versions (confirmed)
 
-### Both fields are already captured and stored in MongoDB
-
-**Source:** `S7CommPlusDriver/src/S7CommPlusDriver/Alarming/AlarmsHmiInfo.cs` and `AlarmThread.cs` (BuildAlarmDocument)
-
-The alarm notification PDU carries a `HmiInfo` blob (attribute `DAI_HmiInfo`, ID 7813). When `SyntaxId >= 258`, this blob contains:
-
-| Byte offset | Field | C# type | Meaning |
-|-------------|-------|---------|---------|
-| 0–1 | SyntaxId | ushort | Protocol version indicator |
-| 2–3 | Version | ushort | Alarm version |
-| 4–7 | ClientAlarmId | uint | Client-side alarm ID |
-| 8 | Priority | byte | Alarm priority (0–n, PLC-configured) |
-| 9 | Reserved1 | byte | — |
-| 10 | Reserved2 | byte | — |
-| 11 | Reserved3 | byte | — |
-| 12–13 | AlarmClass | ushort | TIA Portal alarm class ID |
-| 14 | Producer | byte | — |
-| 15 | GroupId | byte | Alarm group |
-| 16 | Flags | byte | Additional flags |
-
-The existing `BuildAlarmDocument` in `AlarmThread.cs` already stores these:
-
-```csharp
-{ "priority",       (int)dai.HmiInfo.Priority },
-{ "alarmClass",     (int)dai.HmiInfo.AlarmClass },
-{ "alarmClassName", AlarmClassNames.TryGetValue(dai.HmiInfo.AlarmClass, ...) },
-```
-
-**Both `priority` and `alarmClass` are already in every MongoDB document.** No changes to the C# driver are needed to support v1.3 priority or acknowledgeable features.
-
-### isAcknowledgeable derivation
-
-`isAcknowledgeable` is not a separate protocol field. It is implied by `AlarmClass`:
-
-- `AlarmClass == 33` → acknowledgement required (TIA Portal "Acknowledgment required" class)
-- All other classes → no acknowledgement required
-
-This derivation lives in the Vue component. Deriving it in Vue avoids a MongoDB schema change, and AlarmClass 33 is project-validated (see `AlarmClassNames` dict in `AlarmThread.cs`).
-
-**Implementation pattern:**
-
-```js
-// In Vue computed or template
-const isAcknowledgeable = (alarm) => alarm.alarmClass === 33
-```
-
-**Confidence:** HIGH — `AlarmsHmiInfo.cs` source code, `AlarmThread.cs` source code, `PROJECT.md` explicit statement "class 33 = true".
+| Component | Version | Source |
+|-----------|---------|--------|
+| Vuetify | 3.10.12 (installed) / `"3.10"` (package.json) | `AdminUI/package.json` + previous research |
+| Vue 3 | ^3.4.31 | `AdminUI/package.json` |
+| vue-router | ^4.4.0 | `AdminUI/package.json` |
+| Vite | ^7.3.1 | `AdminUI/package.json` |
+| vite-plugin-vuetify | ^2.0.3 | `AdminUI/package.json` (auto-imports Vuetify components) |
 
 ---
 
-## 2. Vuetify v-data-table — Sortable Columns and Client-Side Pagination
+## Core Framework Decisions
 
-### Already working in the existing component
+### v-treeview (Vuetify 3 built-in)
 
-**Installed version:** Vuetify 3.10.12 (confirmed from `node_modules/vuetify/package.json`)
+**Use `v-treeview` from Vuetify 3. No external tree library needed.**
 
-The existing `S7PlusAlarmsViewerPage.vue` already uses `v-data-table` with:
+**Availability:** `v-treeview` is present and documented in Vuetify 3. It was absent in very early Vuetify 3 releases (issues #14622 and #13518 tracked its re-addition), but it has been stable and actively maintained throughout the Vuetify 3 lifecycle. The project's installed version (3.10.12) is well beyond any re-introduction point. Recent bug activity (issues in 3.6.x, 3.7.x, and 3.7.6) confirms the component is actively maintained.
+
+**Lazy loading contract (`load-children` prop):** `v-treeview` supports on-demand child loading via the `load-children` prop. The prop accepts a function that receives the item being expanded. The function is called when the user expands a node whose `item-children` property is an empty array `[]`. The function must **mutate** the item's children array in place (push new items into it) and must return a Promise. After the Promise resolves, Vuetify re-renders the expanded children.
 
 ```vue
-<v-data-table
-  :headers="headers"
-  :items="filteredAlarms"
-  density="compact"
-  :items-per-page="50"
-  :items-per-page-options="[25, 50, 100, 200]"
->
+<v-treeview
+  :items="datablocks"
+  :load-children="loadTagChildren"
+  item-title="name"
+  item-value="id"
+/>
 ```
 
-And header definitions already include `sortable: true`:
-
 ```js
-const headers = [
-  { title: 'Source',         key: 'connectionId',   sortable: true },
-  { title: 'Status',         key: 'alarmState',     sortable: true },
-  { title: 'Acknowledge',    key: 'ackState',        sortable: true },
-  { title: 'Alarm class name', key: 'alarmClassName', sortable: true },
-  // ... etc
-]
-```
-
-**Vuetify 3 `v-data-table` built-in behaviour (v3.10.12):**
-
-| Feature | How it works | Props/Config |
-|---------|-------------|--------------|
-| Column sorting | Click header → sorts ascending/descending/none | `sortable: true` on header definition |
-| Client-side pagination | Paginator rendered automatically below table | `:items-per-page`, `:items-per-page-options` |
-| Pagination with all data in memory | Works with any array size; Vuetify handles slicing | No server-side call needed |
-| Numeric sort | Sorts numbers as numbers, not strings | Default for Number fields |
-| ISO date string sort | Lexicographic — correct for ISO 8601 | Default for string fields |
-
-**For the new combined timestamp column** (replacing separate date + time):
-
-```js
-{ title: 'Timestamp', key: 'timestamp', sortable: true }
-```
-
-ISO 8601 strings (`"2026-03-24T12:57:10.758Z"`) sort correctly lexicographically. No custom sort comparator needed.
-
-**For the priority column:**
-
-```js
-{ title: 'Priority', key: 'priority', sortable: true }
-```
-
-`priority` is a number in MongoDB → number in JSON → Vuetify sorts numerically by default. No custom comparator needed.
-
-**No new Vuetify components or plugins required.** `v-data-table` is already registered via `vite-plugin-vuetify` auto-import.
-
-**Confidence:** HIGH — installed version confirmed from `node_modules`, existing component source read.
-
----
-
-## 3. MongoDB — Removing the 200-Alarm Cap
-
-### Current implementation
-
-`server_realtime_auth/index.js` (listS7PlusAlarms endpoint):
-
-```js
-const docs = await db
-  .collection('s7plusAlarmEvents')
-  .find({})
-  .sort({ createdAt: -1 })
-  .limit(200)        // <-- remove this line
-  .toArray()
-```
-
-### Change required
-
-Remove `.limit(200)`. No other changes. The `.find({}).sort({ createdAt: -1 })` pattern is already correct.
-
-**Performance consideration:** At PoC scale (hundreds to low thousands of alarms), fetching all documents is acceptable. The entire collection is loaded into Vue's `alarms` ref on each 5-second poll; Vuetify pages the display client-side. No server-side pagination API is needed.
-
-**MongoDB driver version:** `mongodb ^7.0.0` (Node.js, `server_realtime_auth/package.json`). `.find().sort().toArray()` without `.limit()` is stable across all versions.
-
-**Confidence:** HIGH — source code read, `package.json` confirmed.
-
----
-
-## 4. Bulk Ack — Sending Multiple Ack Commands
-
-### How the single-ack path works
-
-The existing `POST /Invoke/auth/ackS7PlusAlarm` endpoint inserts one document into `commandsQueue` with `protocolSourceASDU: 's7plus-alarm-ack'`. The `ProcessMongoCmd` change stream listener in `MongoCommands.cs` picks it up, enqueues a `PendingAlarmAck` on `srv.PendingAcks`, and `AlarmThread` drains the queue sending each ack via `alarmConn.SendAlarmAck()`. Acks are sent sequentially, one at a time — this is the correct approach because S7CommPlus ack is a request-response PDU pair per alarm.
-
-### Recommended approach for "Ack All" button
-
-**Client-side sequential fetch loop — no new backend endpoint needed:**
-
-```js
-const ackAllPending = ref(false)
-
-const ackAll = async () => {
-  const unacked = filteredAlarms.value.filter(
-    a => !a.ackState && isAcknowledgeable(a)
-  )
-  if (unacked.length === 0) return
-  ackAllPending.value = true
-  try {
-    for (const alarm of unacked) {
-      await ackAlarm(alarm.cpuAlarmId, alarm.connectionId)
-    }
-  } finally {
-    ackAllPending.value = false
-  }
+const loadTagChildren = async (item) => {
+  const children = await fetchTagsForDatablock(item.id)
+  item.children.push(...children)
+  // Must return a Promise (async function satisfies this)
 }
 ```
 
-**Why this is correct:**
-- Each ack goes through the same `commandsQueue → MongoCommands.cs → AlarmThread → SendAlarmAck` path that single ack uses — no new code paths in C#.
-- There is no batch-ack PDU in S7CommPlus; the PLC processes them one at a time regardless.
-- Sequential `await` means each ack waits for the previous one to complete — avoids flooding `PendingAcks` queue.
-- Consistent with PoC simplicity constraint — no new backend endpoint, no new C# changes.
+**Caveat — `load-children` regression in 3.7.1:** GitHub issue #20450 documents that `load-children` broke between Vuetify 3.6.15 and 3.7.1 (reported September 2024). The project is on 3.10.12, which post-dates this regression. The issue was filed and addressed in the 3.7.x maintenance cycle. **Treat this as resolved at 3.10.12.** If the feature does not work as expected after implementing, pin to the last known-good `load-children` release or implement manual expand-handler workaround (see PITFALLS.md).
 
-**Why not a new bulk-ack backend endpoint:** An `insertMany` into commandsQueue would fire N change stream events simultaneously. `ProcessMongoCmd` picks them up concurrently via `ForEachAsync` but `SendAlarmAck` is synchronous on `alarmConn`. Concurrent enqueues would pile up on `PendingAcks`; the loop in `AlarmThread` already handles that, but the end result is the same serial execution. Sequential client-side `for` loop gives identical throughput with less code.
+**Confidence:** MEDIUM-HIGH — official Vuetify docs confirm the component and `load-children` prop; regression confirmed resolved by version distance (3.7.1 → 3.10.12 is significant); exact fix commit not verified.
 
-**Confidence:** HIGH — `MongoCommands.cs` and `AlarmThread.cs` source code read, architecture confirmed.
+### Router — Opening TagTreeBrowser in a New Window
+
+**Use `useRouter().resolve()` + `window.open()`. No new library needed.**
+
+The project's router uses `createWebHashHistory` (confirmed in `router/index.js`). Vue Router 4 provides `router.resolve(location)` which returns a resolved route object with an `href` property containing the full hash URL. Passing that href to `window.open(href, '_blank')` opens the correct SPA route in a new tab, including query params.
+
+```js
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const openTagTreeBrowser = (dbName) => {
+  const resolved = router.resolve({
+    path: '/tag-tree-browser',
+    query: { db: dbName }
+  })
+  window.open(resolved.href, '_blank')
+}
+```
+
+The new window loads the SPA fresh, reads `useRoute().query.db` on mount, and immediately fetches the tag tree for that datablock.
+
+**Why `router.resolve()` not raw string concatenation:** `createWebHashHistory` prefixes all routes with `/#/`. Constructing the URL manually (e.g., `'/#/tag-tree-browser?db=' + dbName`) is fragile if the app base path changes. `router.resolve()` uses the router's own knowledge of the base and hash prefix, making it resilient.
+
+**Confidence:** HIGH — Vue Router 4 official docs confirm `router.resolve()` API; `createWebHashHistory` confirmed in project source; pattern widely validated in Vue Router community.
 
 ---
 
-## 5. Source PLC Filter (connectionName)
+## New AdminUI Components Required
 
-The `connectionName` field is already stored in every alarm document:
+| Component | Type | Technology | Notes |
+|-----------|------|-----------|-------|
+| `DatablockBrowserPage.vue` | New page component | Vue 3 + Vuetify 3 `v-list` or `v-data-table` | Lists all datablocks from new backend endpoint; each row/item is clickable to open TagTreeBrowser |
+| `TagTreeBrowserPage.vue` | New page component | Vue 3 + Vuetify 3 `v-treeview` | Lazy tree for a single datablock; reads `?db=` from route query on mount; shows live values from `realtimeData` |
 
-```csharp
-{ "connectionName", srv.name ?? "" },
-```
-
-And the viewer already displays it (lines 99–101 of S7PlusAlarmsViewerPage.vue):
-
-```vue
-<template #[`item.connectionId`]="{ item }">
-  {{ item.connectionName || item.connectionId }}
-</template>
-```
-
-A source filter works exactly like the existing `alarmClassFilter`: a `v-select` over the distinct `connectionName` values computed from `alarms.value`. No backend changes needed.
-
-**Confidence:** HIGH — source code confirmed field exists in all documents.
+Both pages follow the existing pattern in `S7PlusAlarmsViewerPage.vue`: `fetch` on `onMounted`, `v-container fluid` layout, Vuetify components only.
 
 ---
 
-## 6. Placeholder Substitution in alarmText and infoText
+## New Router Routes Required
 
-The `ResolveAlarmText` static method already exists in `AlarmThread.cs` and handles `@N%x@` placeholders using `AlarmsAssociatedValues`. It is already applied to `additionalTexts` in `BuildAlarmDocument`. To extend to `alarmText` and `infoText`, apply the same method to those two fields:
+```js
+// Add to router/index.js
+import DatablockBrowserPage from '../components/DatablockBrowserPage.vue'
+import TagTreeBrowserPage from '../components/TagTreeBrowserPage.vue'
 
-```csharp
-{ "alarmText", ResolveAlarmText(texts?.AlarmText ?? "", av) },
-{ "infoText",  ResolveAlarmText(texts?.Infotext ?? "", av) },
+{ path: '/datablock-browser', component: DatablockBrowserPage },
+{ path: '/tag-tree-browser',  component: TagTreeBrowserPage },
 ```
 
-These are the only lines that need to change — no new protocol parsing or library.
-
-**Confidence:** HIGH — `ResolveAlarmText` signature and implementation confirmed in source.
+Query params (`?db=DBName`) are read via `useRoute().query.db` inside `TagTreeBrowserPage.vue`. No dynamic route segments needed.
 
 ---
 
-## Core Technologies (unchanged from v1.2)
+## New Backend Endpoints Required
 
-| Technology | Version | Purpose | Role in v1.3 |
-|------------|---------|---------|--------------|
-| S7CommPlusDriver (submodule) | pinned | PLC protocol | No changes — HmiInfo already decoded |
-| .NET 8 / C# | 8.0 | Driver host | Minor: apply ResolveAlarmText to alarmText + infoText |
-| MongoDB.Driver (C#) | 3.4.2 | Alarm writes | No changes — priority/alarmClass already written |
-| mongodb (Node.js) | ^7.0.0 | Query endpoint | Remove `.limit(200)` only |
-| Vue 3 | ^3.4.31 | UI framework | Ack All loop, timestamp column, source filter, priority column |
-| Vuetify 3 | 3.10.12 (installed) | Component library | v-data-table sortable already works; no new components |
+| Endpoint | Method | Purpose | Pattern |
+|----------|--------|---------|---------|
+| `GET /Invoke/auth/listDatablocks` | GET | Returns array of `{ id, name }` for all known datablocks | Same pattern as `listS7PlusAlarms` in `server_realtime_auth/index.js` |
+| `GET /Invoke/auth/getTagTypeInfo?db=DBName` | GET | Returns tag tree for one datablock (on-demand) | Same HTTP auth pattern; query param instead of body |
 
-## Supporting Libraries — No New Additions
+Both endpoints live in `server_realtime_auth/index.js` alongside existing endpoints. The data source is a new MongoDB collection populated by the C# driver's `GetListOfDatablocks` browse (already implemented at startup for v1.2's `RelationIdNameMap`).
 
-All required capabilities are present in already-installed versions.
+---
 
-| Need | Library | Capability | Status |
-|------|---------|-----------|--------|
-| Sortable columns | Vuetify 3 v-data-table | `sortable: true` on header | Already present in headers |
-| Client-side pagination | Vuetify 3 v-data-table | `:items-per-page` prop | Already configured |
-| Priority numeric sort | Vuetify 3 v-data-table | Default numeric sort | Works automatically for number fields |
-| Timestamp ISO sort | Vuetify 3 v-data-table | Lexicographic string sort | ISO 8601 sorts correctly |
-| Bulk ack loop | Vue 3 | `async/await for...of` | Native JS, no library |
-| Source PLC filter | Vue 3 computed | Same pattern as alarmClassFilter | Already in component |
-| isAcknowledgeable flag | Vue 3 computed | `alarm.alarmClass === 33` | Derived from existing field |
+## New MongoDB Collection
+
+| Collection | Purpose | Populated by |
+|------------|---------|--------------|
+| `s7plusDatablocks` | Stores datablock metadata and optional tag type info | C# driver at startup (extend existing `GetListOfDatablocks` browse) |
+
+The v1.2 driver already calls `GetListOfDatablocks` at startup to build `RelationIdNameMap` (a C# Dictionary). For v1.4, extend this to also upsert each datablock into a MongoDB collection so the AdminUI can query them via HTTP.
+
+---
+
+## Alternatives Considered
+
+| Category | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| Tree component | Vuetify 3 `v-treeview` | Element Plus `el-tree` | Element Plus is not in the project; mixing two component libraries adds bundle weight and style conflicts |
+| Tree component | Vuetify 3 `v-treeview` | PrimeVue `Tree` | Same — not in project, different design system |
+| Tree component | Vuetify 3 `v-treeview` | `@grapoza/vue-tree` | External dependency for a feature that ships natively in the already-installed Vuetify |
+| New window pattern | `router.resolve()` + `window.open()` | `<router-link target="_blank">` | Requires knowing the URL at template render time; the URL is computed from a click event on alarm row (dynamic) |
+| New window pattern | `router.resolve()` + `window.open()` | Emit event to parent + open from parent | Unnecessary indirection; `window.open` from child component is idiomatic |
 
 ---
 
@@ -262,13 +146,11 @@ All required capabilities are present in already-installed versions.
 
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
-| PrimeVue | Not in the project — the UI uses Vuetify 3 | Continue with Vuetify `v-data-table` |
-| Server-side pagination API | PoC scale does not require it; adds endpoint complexity | Client-side via Vuetify `:items-per-page` |
-| New bulk-ack endpoint (`ackS7PlusAlarms`) | Sequential individual acks through existing path is architecturally correct; no batch PDU in S7CommPlus | Client-side `for` loop calling existing endpoint |
-| `isAcknowledgeable` as a stored MongoDB field | Derivable from `alarmClass == 33` with zero overhead; adding it requires driver change and all existing documents would be missing the field | Compute in Vue component |
-| Custom sort function for `priority` | Vuetify sorts numbers natively | Keep header as `{ key: 'priority', sortable: true }` |
-| Separate non-sortable date + time columns | Cannot be sorted; UX downgrade | Single `timestamp` column with ISO string, sortable |
-| Removing `connectionName` in favour of `connectionId` | `connectionName` is already stored and is human-readable | Display `connectionName` as source filter value |
+| Any external Vue tree library | `v-treeview` ships with installed Vuetify 3.10.12 | `v-treeview` with `load-children` prop |
+| Vuetify 4 upgrade | Active project milestone; breaking upgrade risk is unacceptable mid-PoC | Stay on 3.10.x |
+| WebSocket for live values | Existing pattern is HTTP polling every 5s; live values are read from `realtimeData` MongoDB collection via same poll | HTTP fetch on interval, same as alarms viewer |
+| Dynamic route segment (`/tag-tree-browser/:db`) | Query params are simpler for a new-window launch scenario; `useRoute().query.db` is sufficient | `?db=DBName` query param |
+| Server-side tree rendering | Tag tree structure is low-depth (datablock → struct → field); full subtree per datablock fits in a single response | On-demand fetch per node expand via `load-children` |
 
 ---
 
@@ -276,27 +158,27 @@ All required capabilities are present in already-installed versions.
 
 | Component | Version | Notes |
 |-----------|---------|-------|
-| Vuetify | 3.10.12 installed | `v-data-table` with `sortable`, `:items-per-page`, `:items-per-page-options` — stable throughout 3.x |
-| mongodb (Node.js) | ^7.0.0 | `.find().sort().toArray()` without limit — unchanged, stable API |
-| MongoDB.Driver (C#) | 3.4.2 | No new calls needed for v1.3 |
-| Vue 3 | ^3.4.31 | `async/await`, `computed`, `ref`, `for...of` — all standard; no new APIs |
+| Vuetify | 3.10.12 installed | `v-treeview` with `load-children` — available and stable; `load-children` regression (3.7.1) is in the past |
+| Vue 3 | ^3.4.31 | `useRoute()`, `useRouter()`, `onMounted`, `ref` — all standard Composition API |
+| vue-router | ^4.4.0 | `router.resolve()` — stable API throughout Vue Router 4 |
+| vite-plugin-vuetify | ^2.0.3 | Auto-imports `VTreeview` component; no manual registration needed |
+| mongodb (Node.js) | ^7.0.0 | New endpoints follow existing `.find({}).toArray()` pattern |
+| MongoDB.Driver (C#) | 3.4.2 | Extend existing `GetListOfDatablocks` call; no new NuGet packages |
 
 ---
 
 ## Sources
 
-- `S7CommPlusDriver/src/S7CommPlusDriver/Alarming/AlarmsHmiInfo.cs` — `Priority` (byte, byte-offset 8) and `AlarmClass` (ushort, byte-offset 12–13) confirmed in HmiInfo blob deserialization (HIGH confidence, source code)
-- `json-scada/src/S7CommPlusClient/AlarmThread.cs` lines 255–257 — `priority` and `alarmClass` already stored in every alarm document via `dai.HmiInfo.Priority` and `dai.HmiInfo.AlarmClass` (HIGH confidence, source code)
-- `json-scada/src/AdminUI/src/components/S7PlusAlarmsViewerPage.vue` lines 34–41, 179–194 — `v-data-table` already configured with `sortable: true`, `:items-per-page`, and pagination options (HIGH confidence, source code)
-- `json-scada/src/AdminUI/node_modules/vuetify/package.json` — Vuetify 3.10.12 confirmed as installed version (HIGH confidence, package file)
-- `json-scada/src/AdminUI/package.json` — Vue ^3.4.31, Vuetify 3.10 declared dependencies (HIGH confidence, project file)
-- `json-scada/src/server_realtime_auth/index.js` lines 352–368 — `.limit(200)` in listS7PlusAlarms confirmed; removal is the only change needed (HIGH confidence, source code)
-- `json-scada/src/server_realtime_auth/index.js` lines 414–444 — existing single-ack endpoint inserting to `commandsQueue` (HIGH confidence, source code)
-- `json-scada/src/S7CommPlusClient/MongoCommands.cs` lines 97–132 — `PendingAcks` enqueue and sequential `SendAlarmAck` confirmed; sequential client-side loop is architecturally correct (HIGH confidence, source code)
-- `json-scada/src/S7CommPlusClient/AlarmThread.cs` line 253 — `connectionName` stored in every alarm document (HIGH confidence, source code)
-- `.planning/PROJECT.md` — "AlarmClass 33 = isAcknowledgeable = true" stated explicitly (HIGH confidence, project document)
+- `json-scada/src/AdminUI/package.json` — Vuetify `"3.10"`, Vue `^3.4.31`, vue-router `^4.4.0` confirmed (HIGH confidence, project file)
+- `json-scada/src/AdminUI/src/router/index.js` — `createWebHashHistory` confirmed; existing route registration pattern confirmed (HIGH confidence, source code)
+- Vuetify official docs `https://vuetifyjs.com/en/components/treeview/` — `v-treeview` documented with `load-children` prop; lazy expand via empty-children-array contract (MEDIUM-HIGH confidence, official docs; WebFetch blocked, confirmed via search)
+- GitHub issue #14622 `https://github.com/vuetifyjs/vuetify/issues/14622` — Feature request tracking when `v-treeview` would be available in Vuetify 3; confirms it was absent early, now present (MEDIUM confidence, GitHub)
+- GitHub issue #20450 `https://github.com/vuetifyjs/vuetify/issues/20450` — `load-children` regression in 3.7.1; project is on 3.10.12 which post-dates this (MEDIUM confidence, GitHub)
+- GitHub issues #19919, #20344, #20832, #20844 — Active `v-treeview` bug reports in 3.6–3.7 range confirm component is actively maintained (MEDIUM confidence, GitHub)
+- Vue Router docs `https://router.vuejs.org/guide/essentials/navigation.html` — `router.resolve()` API confirmed for generating hrefs (HIGH confidence, official docs)
+- Quasar discussion #14272 + community sources — `router.resolve().href` + `window.open()` pattern for new-tab navigation confirmed as idiomatic (MEDIUM confidence, community)
 
 ---
 
-*Stack research for: S7CommPlus Alarm Viewer Enhancements & Priority (v1.3)*
-*Researched: 2026-03-25*
+*Stack research for: v1.4 Tag Tree Browser (DatablockBrowser + TagTreeBrowser)*
+*Researched: 2026-03-26*
