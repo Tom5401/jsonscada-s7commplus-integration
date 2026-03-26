@@ -72,6 +72,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ `GET /Invoke/auth/listS7PlusDatablocks` returns all datablocks for a connection, sorted by `db_name`, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
 - ✓ `GET /Invoke/auth/listS7PlusTagsForDb` returns realtimeData tags matching `protocolSourceBrowsePath` prefix for a given dbName, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
 - ✓ `POST /Invoke/auth/touchS7PlusActiveTagRequests` bulk-upserts tag requests into `activeTagRequests` with `source: 'tag-tree'` and TTL, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
+- ✓ `DatablockBrowserPage.vue` at `/s7plus-datablocks` — connection dropdown (starts empty), datablock table (db_name + db_number), per-row "Browse Tags" button opens TagTreeBrowser in new tab — Validated in Phase 14: datablockbrowser
 
 ### Out of Scope
 
@@ -161,4 +162,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 — Phase 13 complete: three backend API endpoints for datablock list, tag list, and active tag requests now available*
+*Last updated: 2026-03-26 — Phase 14 complete: DatablockBrowserPage frontend at /s7plus-datablocks — operators can browse PLC datablocks by connection and navigate to TagTreeBrowser in a new tab*
