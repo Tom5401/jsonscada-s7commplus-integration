@@ -1,69 +1,75 @@
-# Requirements: S7CommPlus Alarm Subscriptions for json-scada
+# Requirements: S7CommPlus Tag Tree Browser for json-scada
 
-**Defined:** 2026-03-25
-**Milestone:** v1.3 — Alarm Viewer Enhancements & Priority
-**Core Value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
+**Defined:** 2026-03-26
+**Milestone:** v1.4 — Tag Tree Browser
+**Core Value:** Operators can navigate all PLC datablocks and their tag hierarchies from AdminUI, with live values for configured tags — turning a flat unmanageable tag list into a TIA Portal-style tree browser.
 
-## v1.3 Requirements
+## v1.4 Requirements
 
-### Driver / MongoDB Enrichment
+### Driver
 
-- [x] **DRIVER-01**: Operator sees alarms stored with `isAcknowledgeable` boolean (`alarmClass == 33` → true; all other classes → false)
-- [x] **DRIVER-02**: Operator sees `alarmText` and `infoText` fields with TIA Portal `@N%x@` placeholders resolved at alarm write time — same `ResolveAlarmText(template, av)` call already used for `additionalTexts` in `BuildAlarmDocument()` (lines 212–220); both fields currently stored raw at lines 245–246)
+- [ ] **DRIVER-03**: Driver stores the full datablock list from the PLC in a MongoDB `s7plusDatablocks` collection at startup, using upsert keyed on `{connectionNumber, db_name}`; each document contains `db_name`, `db_number`, `db_block_relid`, `db_block_ti_relid`, and `connectionNumber`
 
 ### Backend API
 
-- [x] **API-01**: Alarm viewer loads the full alarm collection without hitting a hard count ceiling (remove `.limit(200)` from `listS7PlusAlarms`)
-- [x] **API-02**: MongoDB `{ createdAt: -1 }` index exists at server startup to maintain query performance after cap removal (must ship in the same change as API-01)
+- [ ] **API-03**: `GET /Invoke/auth/listS7PlusDatablocks?connectionNumber=N` returns all datablock documents for the specified connection, sorted by `db_name`; admin-guarded consistent with other S7Plus endpoints
+- [ ] **API-04**: `GET /Invoke/auth/listS7PlusTagsForDb?connectionNumber=N&dbName=X` returns all `realtimeData` tag documents for that connection where `protocolSourceObjectAddress` starts with `"X"` (quoted DB name prefix); used by TagTreeBrowser to build the tree client-side
+- [ ] **API-05**: `POST /Invoke/auth/touchS7PlusActiveTagRequests` accepts an array of `{connectionNumber, protocolSourceObjectAddress}` pairs and upserts them into the `activeTagRequests` MongoDB collection with a refreshed TTL — enabling active OPC read polling for leaf tags that are currently visible in the tree
 
-### Viewer — Display
+### DatablockBrowser
 
-- [x] **VIEWER-01**: Operator sees a single combined timestamp column replacing separate Date and Time columns, formatted as `2026-03-24_12:57:10.758` (local time, millisecond precision)
-- [x] **VIEWER-02**: Operator can sort the alarm table by priority using a sortable Priority column (uses existing `priority` field already in every MongoDB document)
-- [x] **VIEWER-03**: Operator can see whether each alarm requires acknowledgement or is information-only via an indicator in the alarm viewer (derived from `isAcknowledgeable`; display hint only — Ack button visibility is driven by `ackState`, not this field)
+- [ ] **DBBROWSER-01**: Operator can see all datablocks on a connected PLC (showing `db_name` and `db_number`) via a new `DatablockBrowserPage` added to the AdminUI navigation menu
+- [ ] **DBBROWSER-02**: Operator can filter the datablock list to a specific PLC using a connection selector dropdown
+- [ ] **DBBROWSER-03**: Operator can open `TagTreeBrowserPage` for a specific datablock by clicking on a row; the tag browser opens in a new browser tab
 
-### Viewer — Filtering & Interaction
+### TagTreeBrowser
 
-- [x] **VIEWER-04**: Operator can filter alarms by source PLC using a dropdown based on `connectionName`, consistent with existing Status and AlarmClass filter controls
-- [x] **VIEWER-05**: Operator can acknowledge all currently unacked alarms matching the active filter with a single "Ack All" button, with a confirmation dialog showing the count; each ack is attempted independently so a single failure does not block the rest
-- [x] **VIEWER-06**: Operator's current page in the alarm table is preserved across the 5-second auto-refresh cycle (no jump back to page 1 on each poll)
+- [ ] **TAGTREE-01**: Operator sees configured tags for a datablock displayed as a lazy-expanding tree, where the tree structure is derived by parsing `protocolSourceObjectAddress` strings from `realtimeData` (e.g. `"DBName".SubStruct.Tag` → tree depth matching TIA Portal's symbol hierarchy)
+- [ ] **TAGTREE-02**: Operator sees live tag values for expanded leaf tags, auto-refreshing every 5 seconds; expanding a node triggers a `touchS7PlusActiveTagRequests` call so the OPC read service actively polls the visible tags
+- [ ] **TAGTREE-03**: Operator sees the data type of each leaf tag in the tree (from the `type` or equivalent field in `realtimeData` documents)
+- [ ] **TAGTREE-04**: `TagTreeBrowserPage` accepts `?db=<name>&connectionNumber=<N>` query parameters on load, enabling navigation from both `DatablockBrowserPage` and `S7PlusAlarmsViewerPage`
+
+### Integration
+
+- [ ] **INTEGRATION-01**: In `S7PlusAlarmsViewerPage`, the `originDbName` cell is rendered as a clickable link; clicking opens `TagTreeBrowserPage` in a new browser tab pre-filtered to that datablock and connection
 
 ## Future Requirements
 
-*(None identified — all proposed features are in scope for v1.3)*
+- Client-side name filter in DatablockBrowserPage (low effort, not prioritised)
+- Node type icons per Softdatatype category (MDI icons matching TIA Portal visual language)
+- Last-updated timestamp next to live value in tag tree
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| alarmPriority as new MongoDB field | `priority` already stored in every document since v1.2 Phase 5 — no driver change needed; viewer work only |
-| infoText-only substitution | Both alarmText and infoText confirmed raw in BuildAlarmDocument() lines 245–246; DRIVER-02 covers both |
-| Server-side pagination | PoC scale; client-side pagination sufficient with index in place |
-| Alarm log retention / auto-expire | Not yet prioritised |
-| Auto-resubscribe after alarm subscription failure | Tech debt, not v1.3 scope |
-| Priority chip colour coding | Only valuable if PoC PLC actually uses varied priority values — defer until confirmed |
-| Hiding Ack button for non-acknowledgeable alarms | Risk: alarm classes outside known set (33, 37, 39, 43) may still expect ack; gate Ack All count on isAcknowledgeable, not Ack button visibility |
+| On-demand PLC browse for unconfigured tags | Requires dedicated 3rd S7CommPlusConnection + commandsQueue ASDU; PoC scope; realtimeData sufficient |
+| Write-back / force tag values from browser | Requires SBO logic, access control, command queue extension |
+| Multi-dimensional array expansion in tree | 1-dim covers majority of real PLC programs; defer |
+| Export tag list to CSV | Not prioritised for PoC |
+| Auto-resubscribe after alarm subscription failure | Pre-existing tech debt, not v1.4 scope |
 
 ## Traceability
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRIVER-01 | Phase 9 | Complete |
-| DRIVER-02 | Phase 9 | Complete |
-| API-01 | Phase 10 | Complete |
-| API-02 | Phase 10 | Complete |
-| VIEWER-01 | Phase 11 | Complete |
-| VIEWER-02 | Phase 11 | Complete |
-| VIEWER-03 | Phase 11 | Complete |
-| VIEWER-04 | Phase 11 | Complete |
-| VIEWER-05 | Phase 11 | Complete |
-| VIEWER-06 | Phase 11 | Complete |
+| DRIVER-03 | — | Unmapped |
+| API-03 | — | Unmapped |
+| API-04 | — | Unmapped |
+| API-05 | — | Unmapped |
+| DBBROWSER-01 | — | Unmapped |
+| DBBROWSER-02 | — | Unmapped |
+| DBBROWSER-03 | — | Unmapped |
+| TAGTREE-01 | — | Unmapped |
+| TAGTREE-02 | — | Unmapped |
+| TAGTREE-03 | — | Unmapped |
+| TAGTREE-04 | — | Unmapped |
+| INTEGRATION-01 | — | Unmapped |
 
 **Coverage:**
-- v1.3 requirements: 10 total
-- Mapped to phases: 10 (roadmap complete)
-- Unmapped: 0 ✓
+- v1.4 requirements: 12 total
+- Mapped to phases: 0 (roadmap pending)
+- Unmapped: 12
 
 ---
-*Requirements defined: 2026-03-25*
-*Last updated: 2026-03-25 — traceability updated after v1.3 roadmap creation*
+*Requirements defined: 2026-03-26*
