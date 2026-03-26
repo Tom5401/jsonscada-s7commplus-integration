@@ -8,7 +8,7 @@
 
 ### Driver
 
-- [ ] **DRIVER-03**: Driver stores the full datablock list from the PLC in a MongoDB `s7plusDatablocks` collection at startup, using upsert keyed on `{connectionNumber, db_name}`; each document contains `db_name`, `db_number`, `db_block_relid`, `db_block_ti_relid`, and `connectionNumber`
+- [x] **DRIVER-03**: Driver stores the full datablock list from the PLC in a MongoDB `s7plusDatablocks` collection at startup, using upsert keyed on `{connectionNumber, db_name}`; each document contains `db_name`, `db_number`, `db_block_relid`, `db_block_ti_relid`, and `connectionNumber`
 
 ### Backend API
 
@@ -53,7 +53,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRIVER-03 | Phase 12 | Pending |
+| DRIVER-03 | Phase 12 | Complete |
 | API-03 | Phase 13 | Pending |
 | API-04 | Phase 13 | Pending |
 | API-05 | Phase 13 | Pending |

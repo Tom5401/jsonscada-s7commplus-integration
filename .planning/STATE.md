@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.4
-milestone_name: Tag Tree Browser
-status: Ready to plan
-stopped_at: Roadmap created — ready to plan Phase 12
-last_updated: "2026-03-26T00:00:00.000Z"
+milestone_name: — Tag Tree Browser
+status: Phase complete — ready for verification
+stopped_at: Completed 12-01-PLAN.md
+last_updated: "2026-03-26T08:05:33.751Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # Project State
@@ -20,16 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.4 Tag Tree Browser — Phase 12 (Driver — Datablock Persistence)
+**Current focus:** Phase 12 — Driver — Datablock Persistence
 
 ## Current Position
 
-Phase: 12 of 15 (Driver — Datablock Persistence)
-Plan: Not yet planned
-Status: Ready to plan
-Last activity: 2026-03-26 — Roadmap created for v1.4 (4 phases, 12 requirements)
-
-Progress: [░░░░░░░░░░] 0% (v1.4)
+Phase: 12 (Driver — Datablock Persistence) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -55,6 +51,7 @@ Progress: [░░░░░░░░░░] 0% (v1.4)
 | 9. Driver Enrichment | 1/1 | ~10 min |
 | 10. API Cap Removal | 1/1 | ~5 min |
 | 11. Vue UI Enhancements | 2/2 | ~10 min |
+| Phase 12 P01 | 10 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -63,11 +60,13 @@ Progress: [░░░░░░░░░░] 0% (v1.4)
 See PROJECT.md Key Decisions table for full log.
 
 **v1.4 architecture decisions (from research):**
+
 - Tags fetched via realtimeData query (protocolSourceObjectAddress prefix match) — no dedicated PLC browse connection needed for v1.4 scope
 - Tree built entirely client-side by parsing protocolSourceObjectAddress strings
 - activeTagRequests upsert on expand enables TTL-based polling without a dedicated browse connection
 - New-tab navigation via window.open + router.resolve().href (createWebHashHistory — no URL construction needed)
 - JWT must be in localStorage (not sessionStorage) for cross-tab auth to work
+- [Phase 12]: Upsert keyed on {connectionNumber, db_name} prevents duplicates on restart; UpsertDatablocks only called on browse success (stale data preserved on failure)
 
 ### Pending Todos
 
@@ -81,7 +80,7 @@ None.
 ## Session Continuity
 
 Last activity: 2026-03-26
-Last session: 2026-03-26
-Stopped at: Roadmap created — 4 phases, 12 requirements mapped, files written
+Last session: 2026-03-26T08:05:33.747Z
+Stopped at: Completed 12-01-PLAN.md
 Resume file: None
 Next action: `/gsd:plan-phase 12`

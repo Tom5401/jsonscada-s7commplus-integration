@@ -59,7 +59,7 @@ Full details: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 
 #### Phases
 
-- [ ] **Phase 12: Driver — Datablock Persistence** - C# driver writes the full PLC datablock list to MongoDB at startup
+- [x] **Phase 12: Driver — Datablock Persistence** - C# driver writes the full PLC datablock list to MongoDB at startup (completed 2026-03-26)
 - [ ] **Phase 13: Backend API — Datablocks & Tag Endpoints** - Three new HTTP endpoints expose datablock list, realtimeData tags, and activeTagRequests upsert
 - [ ] **Phase 14: DatablockBrowser** - New AdminUI page listing all PLC datablocks with connection selector and row-level navigation to TagTreeBrowser
 - [ ] **Phase 15: TagTreeBrowser & Integration** - Lazy tag tree with live values, URL-param bootstrap, and alarms viewer link integration
@@ -74,9 +74,9 @@ Full details: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
   1. After driver startup, the `s7plusDatablocks` MongoDB collection contains one document per datablock on the connected PLC
   2. Each document includes `db_name`, `db_number`, `db_block_relid`, `db_block_ti_relid`, and `connectionNumber`
   3. Restarting the driver upserts (not duplicates) the datablock documents — keyed on `{connectionNumber, db_name}`
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 12-01-PLAN.md — Add DatablocksCollectionName, EnsureDatablockIndexes, and UpsertDatablocks to S7CommPlusClient
+- [x] 12-01-PLAN.md — Add DatablocksCollectionName, EnsureDatablockIndexes, and UpsertDatablocks to S7CommPlusClient
 
 ### Phase 13: Backend API — Datablocks & Tag Endpoints
 **Goal**: Three new admin-guarded HTTP endpoints expose the datablock list, realtimeData tags filtered by DB name, and activeTagRequests upsert — all as thin MongoDB reads/writes with no PLC calls
@@ -129,7 +129,7 @@ Plans:
 | 9. Driver Enrichment | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 10. API Cap Removal | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 11. Vue UI Enhancements | v1.3 | 2/2 | Complete | 2026-03-25 |
-| 12. Driver — Datablock Persistence | v1.4 | 0/1 | Not started | - |
+| 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete   | 2026-03-26 |
 | 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 0/? | Not started | - |
 | 14. DatablockBrowser | v1.4 | 0/? | Not started | - |
 | 15. TagTreeBrowser & Integration | v1.4 | 0/? | Not started | - |
