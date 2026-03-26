@@ -6,6 +6,16 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.2 — Alarm origin enrichment and history deletion validated 2026-03-24. Full alarm management loop (subscribe → display → ack → delete) complete.
 
+## Current Milestone: v1.4 Tag Tree Browser
+
+**Goal:** Mirror TIA Portal's hierarchical tag browsing in AdminUI — operators can navigate datablock structure, see live values for configured tags, and open a tag tree directly from the alarms viewer.
+
+**Target features:**
+- DatablockBrowser page — lists all PLC datablocks in a tree, added to AdminUI main menu
+- TagTreeBrowser page — lazy tree expansion of tags within a datablock with live values from realtimeData
+- Backend: new MongoDB collection + HTTP endpoints for datablock list and on-demand type info browse
+- S7AlarmsViewer integration — clickable origin DB name opens TagTreeBrowser in a new browser window
+
 ## Shipped: v1.3 Alarm Viewer Enhancements & Priority (2026-03-25)
 
 All 10 requirements validated. The alarm viewer now shows enriched alarm data with full UX improvements:
@@ -58,7 +68,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ### Active
 
-*(v1.3 complete — define v1.4 requirements with `/gsd:new-milestone`)*
+*(v1.4 in progress — requirements defined, roadmap pending)*
 
 ### Out of Scope
 
@@ -148,4 +158,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-25 after v1.3 milestone*
+*Last updated: 2026-03-26 — milestone v1.4 started*

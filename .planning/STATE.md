@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: v1.3 milestone complete
-stopped_at: 11-02-PLAN.md complete — all tasks done, human-verify approved
-last_updated: "2026-03-25T18:35:58.325Z"
-last_activity: 2026-03-25
+milestone: v1.4
+milestone_name: Tag Tree Browser
+status: Defining requirements
+stopped_at: —
+last_updated: "2026-03-26T00:00:00.000Z"
+last_activity: 2026-03-26
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
@@ -20,12 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-24)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.3 complete — run `/gsd:new-milestone` to plan next milestone
+**Current focus:** v1.4 Tag Tree Browser — defining requirements
 
 ## Current Position
 
-Phase 11 (vue-ui-enhancements) — COMPLETE
-Plan 2 of 2 — COMPLETE
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-26 — Milestone v1.4 started
 
 ## Performance Metrics
 
@@ -73,7 +75,7 @@ None.
 
 ### Blockers/Concerns
 
-None — milestone v1.3 complete.
+None.
 
 ### Quick Tasks Completed
 
@@ -88,4 +90,4 @@ Last activity: 2026-03-25
 Last session: 2026-03-25T18:10:00.000Z
 Stopped at: 11-02-PLAN.md complete — all tasks done, human-verify approved
 Resume file: None
-Next action: `/gsd:new-milestone` to start v1.4 planning
+Next action: Define requirements for v1.4, then run `/gsd:plan-phase [N]`
