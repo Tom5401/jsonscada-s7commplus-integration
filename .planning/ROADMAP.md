@@ -53,7 +53,7 @@ Full details: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 
 </details>
 
-### 🚧 v1.4 Tag Tree Browser (In Progress)
+### v1.4 Tag Tree Browser (In Progress)
 
 **Milestone Goal:** Mirror TIA Portal's hierarchical tag browsing in AdminUI — operators can navigate datablock structure, see live values for configured tags, and open a tag tree directly from the alarms viewer.
 
@@ -87,7 +87,9 @@ Plans:
   2. `GET /Invoke/auth/listS7PlusTagsForDb?connectionNumber=N&dbName=X` returns all `realtimeData` documents whose `protocolSourceObjectAddress` begins with `"X"` (quoted DB name prefix)
   3. `POST /Invoke/auth/touchS7PlusActiveTagRequests` accepts an array of `{connectionNumber, protocolSourceObjectAddress}` pairs and upserts them into `activeTagRequests` with a refreshed TTL timestamp
   4. All three endpoints reject unauthenticated requests consistent with the existing `[authJwt.isAdmin]` guard pattern
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 13-01-PLAN.md — Add listS7PlusDatablocks, listS7PlusTagsForDb, and touchS7PlusActiveTagRequests endpoints
 
 ### Phase 14: DatablockBrowser
 **Goal**: Operators can navigate to a new AdminUI page that lists all PLC datablocks with a connection filter, and open the TagTreeBrowser for any selected datablock in a new browser tab
@@ -130,6 +132,6 @@ Plans:
 | 10. API Cap Removal | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 11. Vue UI Enhancements | v1.3 | 2/2 | Complete | 2026-03-25 |
 | 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete    | 2026-03-26 |
-| 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 0/? | Not started | - |
+| 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 0/1 | Not started | - |
 | 14. DatablockBrowser | v1.4 | 0/? | Not started | - |
 | 15. TagTreeBrowser & Integration | v1.4 | 0/? | Not started | - |
