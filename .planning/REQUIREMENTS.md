@@ -53,23 +53,24 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DRIVER-03 | — | Unmapped |
-| API-03 | — | Unmapped |
-| API-04 | — | Unmapped |
-| API-05 | — | Unmapped |
-| DBBROWSER-01 | — | Unmapped |
-| DBBROWSER-02 | — | Unmapped |
-| DBBROWSER-03 | — | Unmapped |
-| TAGTREE-01 | — | Unmapped |
-| TAGTREE-02 | — | Unmapped |
-| TAGTREE-03 | — | Unmapped |
-| TAGTREE-04 | — | Unmapped |
-| INTEGRATION-01 | — | Unmapped |
+| DRIVER-03 | Phase 12 | Pending |
+| API-03 | Phase 13 | Pending |
+| API-04 | Phase 13 | Pending |
+| API-05 | Phase 13 | Pending |
+| DBBROWSER-01 | Phase 14 | Pending |
+| DBBROWSER-02 | Phase 14 | Pending |
+| DBBROWSER-03 | Phase 14 | Pending |
+| TAGTREE-01 | Phase 15 | Pending |
+| TAGTREE-02 | Phase 15 | Pending |
+| TAGTREE-03 | Phase 15 | Pending |
+| TAGTREE-04 | Phase 15 | Pending |
+| INTEGRATION-01 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.4 requirements: 12 total
-- Mapped to phases: 0 (roadmap pending)
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-26*
+*Traceability updated: 2026-03-26 — roadmap created*

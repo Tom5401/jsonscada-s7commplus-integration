@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: Tag Tree Browser
-status: Defining requirements
-stopped_at: —
+status: Ready to plan
+stopped_at: Roadmap created — ready to plan Phase 12
 last_updated: "2026-03-26T00:00:00.000Z"
 last_activity: 2026-03-26
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,17 +17,19 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-24)
+See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.4 Tag Tree Browser — defining requirements
+**Current focus:** v1.4 Tag Tree Browser — Phase 12 (Driver — Datablock Persistence)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-03-26 — Milestone v1.4 started
+Phase: 12 of 15 (Driver — Datablock Persistence)
+Plan: Not yet planned
+Status: Ready to plan
+Last activity: 2026-03-26 — Roadmap created for v1.4 (4 phases, 12 requirements)
+
+Progress: [░░░░░░░░░░] 0% (v1.4)
 
 ## Performance Metrics
 
@@ -46,10 +48,10 @@ Last activity: 2026-03-26 — Milestone v1.4 started
 | 2. Driver Fixes | 2/2 | ~1 hour |
 | 3. Read-Only Alarm Viewer | 2/2 | ~8 min |
 | 4. Ack Write-Back | 2/2 | ~55 min |
-| 5. Driver — RelationId Fields | 1/1 | ~30 min (incl. re-verification) |
+| 5. Driver — RelationId Fields | 1/1 | ~30 min |
 | 6. Driver — Startup DB Name Map | 1/1 | ~2 min |
 | 7. Backend — Delete Endpoint + _id Exposure | 1/1 | ~15 min |
-| 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h (incl. branch recovery) |
+| 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h |
 | 9. Driver Enrichment | 1/1 | ~10 min |
 | 10. API Cap Removal | 1/1 | ~5 min |
 | 11. Vue UI Enhancements | 2/2 | ~10 min |
@@ -60,14 +62,12 @@ Last activity: 2026-03-26 — Milestone v1.4 started
 
 See PROJECT.md Key Decisions table for full log.
 
-**v1.3 decisions:**
-
-- AcknowledgeableClasses as HashSet {33, 37, 39} for O(1) membership check (09-01)
-- alarmText/infoText resolved at write time via ResolveAlarmText(), consistent with additionalTexts (09-01)
-- [Phase 11-vue-ui-enhancements]: formatTimestamp() uses manual Date property extraction for YYYY-MM-DD_HH:MM:SS.mmm in local time
-- [Phase 11-vue-ui-enhancements]: isAcknowledgeable === false strict equality preserves backward compat with pre-Phase 9 alarm documents
-- [Phase 11-vue-ui-enhancements]: currentPage ref + v-model:page on v-data-table; fetchAlarms never resets page — zero-cost page preservation
-- [Phase 11-vue-ui-enhancements]: connectionFilter follows exact same computed pattern as alarmClassFilter; ackAllCount scoped to filteredAlarms; executeAckAll uses alarm.connectionId for ackAlarm call
+**v1.4 architecture decisions (from research):**
+- Tags fetched via realtimeData query (protocolSourceObjectAddress prefix match) — no dedicated PLC browse connection needed for v1.4 scope
+- Tree built entirely client-side by parsing protocolSourceObjectAddress strings
+- activeTagRequests upsert on expand enables TTL-based polling without a dedicated browse connection
+- New-tab navigation via window.open + router.resolve().href (createWebHashHistory — no URL construction needed)
+- JWT must be in localStorage (not sessionStorage) for cross-tab auth to work
 
 ### Pending Todos
 
@@ -75,19 +75,13 @@ None.
 
 ### Blockers/Concerns
 
-None.
-
-### Quick Tasks Completed
-
-| # | Description | Date | Commit | Directory |
-|---|-------------|------|--------|-----------|
-| 260324-i0m | S7Plus Alarms Viewer source column show protocolConnection name instead of number | 2026-03-24 | d387b306 | [260324-i0m-s7plus-alarms-viewer-source-column-show-](./quick/260324-i0m-s7plus-alarms-viewer-source-column-show-/) |
-| 260324-l5d | S7Plus alarm MongoDB entries include sourceId and connectionName fields, viewer reads connectionName from alarm document | 2026-03-24 | e6a43a13 | [260324-l5d-s7plus-alarm-mongodb-entries-include-sou](./quick/260324-l5d-s7plus-alarm-mongodb-entries-include-sou/) |
+- [Phase 15] JWT token storage location must be confirmed against AdminUI auth store before wiring window.open — if token is in sessionStorage, new tab opens unauthenticated (research Pitfall 4)
+- [Phase 15] protocolSourceObjectAddress format in realtimeData must be confirmed against a real document before building tree-path parsing logic
 
 ## Session Continuity
 
-Last activity: 2026-03-25
-Last session: 2026-03-25T18:10:00.000Z
-Stopped at: 11-02-PLAN.md complete — all tasks done, human-verify approved
+Last activity: 2026-03-26
+Last session: 2026-03-26
+Stopped at: Roadmap created — 4 phases, 12 requirements mapped, files written
 Resume file: None
-Next action: Define requirements for v1.4, then run `/gsd:plan-phase [N]`
+Next action: `/gsd:plan-phase 12`
