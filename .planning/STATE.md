@@ -1,31 +1,31 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.4
-milestone_name: — Tag Tree Browser
-status: Ready to plan
-stopped_at: 14-01-PLAN.md complete — all tasks done
-last_updated: "2026-03-26T12:06:35.722Z"
+milestone_name: Tag Tree Browser
+status: v1.4 in progress — Phase 15 complete
+stopped_at: 15-01-PLAN.md complete — all tasks done
+last_updated: "2026-03-26T00:00:00.000Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 3
-  completed_plans: 3
+  completed_phases: 4
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-26)
+See: .planning/PROJECT.md (updated 2026-03-24)
 
-**Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** Phase 14 — datablockbrowser
+**Core value:** Operators can navigate all PLC datablocks and their tag hierarchies from AdminUI, with live values for configured tags — turning a flat unmanageable tag list into a TIA Portal-style tree browser.
+**Current focus:** Phase 15 (TagTreeBrowser & Integration) complete — v1.4 milestone deliverables done
 
 ## Current Position
 
-Phase: 15
-Plan: Not started
+Phase 15 (tagtreebrowser-integration) — COMPLETE
+Plan 1 of 1 — COMPLETE
 
 ## Performance Metrics
 
@@ -44,16 +44,17 @@ Plan: Not started
 | 2. Driver Fixes | 2/2 | ~1 hour |
 | 3. Read-Only Alarm Viewer | 2/2 | ~8 min |
 | 4. Ack Write-Back | 2/2 | ~55 min |
-| 5. Driver — RelationId Fields | 1/1 | ~30 min |
+| 5. Driver — RelationId Fields | 1/1 | ~30 min (incl. re-verification) |
 | 6. Driver — Startup DB Name Map | 1/1 | ~2 min |
 | 7. Backend — Delete Endpoint + _id Exposure | 1/1 | ~15 min |
-| 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h |
+| 8. Frontend — Delete Buttons + Origin Columns | 1/1 | ~1h (incl. branch recovery) |
 | 9. Driver Enrichment | 1/1 | ~10 min |
 | 10. API Cap Removal | 1/1 | ~5 min |
 | 11. Vue UI Enhancements | 2/2 | ~10 min |
-| Phase 12 P01 | 10 | 2 tasks | 2 files |
-| Phase 13-backend-api-datablocks-tag-endpoints P01 | 5m | 2 tasks | 1 files |
-| Phase 14 P01 | 2min | 2 tasks | 4 files |
+| 12. Driver — Datablock Persistence | 1/1 | ~30 min |
+| 13. Backend API — Datablocks & Tags | 1/1 | ~15 min |
+| 14. DatablockBrowser | 1/1 | ~20 min |
+| 15. TagTreeBrowser & Integration | 1/1 | ~15 min |
 
 ## Accumulated Context
 
@@ -61,17 +62,21 @@ Plan: Not started
 
 See PROJECT.md Key Decisions table for full log.
 
-**v1.4 architecture decisions (from research):**
+**v1.3 decisions:**
 
-- Tags fetched via realtimeData query (protocolSourceObjectAddress prefix match) — no dedicated PLC browse connection needed for v1.4 scope
-- Tree built entirely client-side by parsing protocolSourceObjectAddress strings
-- activeTagRequests upsert on expand enables TTL-based polling without a dedicated browse connection
-- New-tab navigation via window.open + router.resolve().href (createWebHashHistory — no URL construction needed)
-- JWT must be in localStorage (not sessionStorage) for cross-tab auth to work
-- [Phase 12]: Upsert keyed on {connectionNumber, db_name} prevents duplicates on restart; UpsertDatablocks only called on browse success (stale data preserved on failure)
-- [Phase 13-backend-api-datablocks-tag-endpoints]: protocolSourceBrowsePath used in listS7PlusTagsForDb (not protocolSourceObjectAddress per D-01); touchS7PlusActiveTagRequests direct upsert without realtimeData lookup per D-02; source: 'tag-tree' set on activeTagRequests upserts
-- [Phase 14]: selectedConnection initialized to null (no pre-selection on load per D-01)
-- [Phase 14]: window.open with /#/s7plus-tag-tree hash URL for new-tab navigation (createWebHashHistory requires # prefix)
+- AcknowledgeableClasses as HashSet {33, 37, 39} for O(1) membership check (09-01)
+- alarmText/infoText resolved at write time via ResolveAlarmText(), consistent with additionalTexts (09-01)
+- [Phase 11-vue-ui-enhancements]: formatTimestamp() uses manual Date property extraction for YYYY-MM-DD_HH:MM:SS.mmm in local time
+- [Phase 11-vue-ui-enhancements]: isAcknowledgeable === false strict equality preserves backward compat with pre-Phase 9 alarm documents
+- [Phase 11-vue-ui-enhancements]: currentPage ref + v-model:page on v-data-table; fetchAlarms never resets page — zero-cost page preservation
+- [Phase 11-vue-ui-enhancements]: connectionFilter follows exact same computed pattern as alarmClassFilter; ackAllCount scoped to filteredAlarms; executeAckAll uses alarm.connectionId for ackAlarm call
+
+**v1.4 decisions:**
+
+- [Phase 15-tagtreebrowser]: buildTree uses protocolSourceBrowsePath (not protocolSourceObjectAddress) for tree construction — cleaner parsing (no quote stripping needed); leaf nodes use children: undefined to prevent expand arrow
+- [Phase 15-tagtreebrowser]: patchLeafValues updates leaf .value in-place without replacing treeItems array — preserves v-model:opened expand state across 5s refresh cycles
+- [Phase 15-tagtreebrowser]: getExpandedLeafTags guards against empty tag array before touch call — backend rejects empty array with 400
+- [Phase 15-tagtreebrowser]: originDbName link uses item.connectionId directly as connectionNumber — confirmed in CONTEXT.md that connectionId field IS the connection number on alarm documents
 
 ### Pending Todos
 
@@ -79,13 +84,19 @@ None.
 
 ### Blockers/Concerns
 
-- [Phase 15] JWT token storage location must be confirmed against AdminUI auth store before wiring window.open — if token is in sessionStorage, new tab opens unauthenticated (research Pitfall 4)
-- [Phase 15] protocolSourceObjectAddress format in realtimeData must be confirmed against a real document before building tree-path parsing logic
+None — milestone v1.3 complete.
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260324-i0m | S7Plus Alarms Viewer source column show protocolConnection name instead of number | 2026-03-24 | d387b306 | [260324-i0m-s7plus-alarms-viewer-source-column-show-](./quick/260324-i0m-s7plus-alarms-viewer-source-column-show-/) |
+| 260324-l5d | S7Plus alarm MongoDB entries include sourceId and connectionName fields, viewer reads connectionName from alarm document | 2026-03-24 | e6a43a13 | [260324-l5d-s7plus-alarm-mongodb-entries-include-sou](./quick/260324-l5d-s7plus-alarm-mongodb-entries-include-sou/) |
 
 ## Session Continuity
 
 Last activity: 2026-03-26
-Last session: 2026-03-26T12:02:22.456Z
-Stopped at: 14-01-PLAN.md complete — all tasks done
+Last session: 2026-03-26T00:00:00.000Z
+Stopped at: 15-01-PLAN.md complete — all tasks done
 Resume file: None
-Next action: `/gsd:plan-phase 12`
+Next action: Human-verify Phase 15 TagTreeBrowserPage in browser; complete v1.4 milestone

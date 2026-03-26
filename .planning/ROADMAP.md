@@ -116,7 +116,7 @@ Plans:
   5. In `S7PlusAlarmsViewerPage`, each `originDbName` cell is a clickable link that opens `TagTreeBrowserPage` in a new browser tab pre-filtered to that datablock and connection
 **Plans:** 1 plan
 Plans:
-- [ ] 15-01-PLAN.md — Create TagTreeBrowserPage with tree hierarchy, live values, and alarms viewer originDbName link integration
+- [x] 15-01-PLAN.md — Create TagTreeBrowserPage with tree hierarchy, live values, and alarms viewer originDbName link integration
 
 ## Progress
 
@@ -136,4 +136,4 @@ Plans:
 | 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete    | 2026-03-26 |
 | 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 1/1 | Complete    | 2026-03-26 |
 | 14. DatablockBrowser | v1.4 | 1/1 | Complete    | 2026-03-26 |
-| 15. TagTreeBrowser & Integration | v1.4 | 0/1 | Not started | - |
+| 15. TagTreeBrowser & Integration | v1.4 | 1/1 | Complete    | 2026-03-26 |

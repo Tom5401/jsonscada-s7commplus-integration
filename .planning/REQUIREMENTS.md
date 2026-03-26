@@ -24,14 +24,14 @@
 
 ### TagTreeBrowser
 
-- [ ] **TAGTREE-01**: Operator sees configured tags for a datablock displayed as a lazy-expanding tree, where the tree structure is derived by parsing `protocolSourceObjectAddress` strings from `realtimeData` (e.g. `"DBName".SubStruct.Tag` → tree depth matching TIA Portal's symbol hierarchy)
-- [ ] **TAGTREE-02**: Operator sees live tag values for expanded leaf tags, auto-refreshing every 5 seconds; expanding a node triggers a `touchS7PlusActiveTagRequests` call so the OPC read service actively polls the visible tags
-- [ ] **TAGTREE-03**: Operator sees the data type of each leaf tag in the tree (from the `type` or equivalent field in `realtimeData` documents)
-- [ ] **TAGTREE-04**: `TagTreeBrowserPage` accepts `?db=<name>&connectionNumber=<N>` query parameters on load, enabling navigation from both `DatablockBrowserPage` and `S7PlusAlarmsViewerPage`
+- [x] **TAGTREE-01**: Operator sees configured tags for a datablock displayed as a lazy-expanding tree, where the tree structure is derived by parsing `protocolSourceObjectAddress` strings from `realtimeData` (e.g. `"DBName".SubStruct.Tag` → tree depth matching TIA Portal's symbol hierarchy)
+- [x] **TAGTREE-02**: Operator sees live tag values for expanded leaf tags, auto-refreshing every 5 seconds; expanding a node triggers a `touchS7PlusActiveTagRequests` call so the OPC read service actively polls the visible tags
+- [x] **TAGTREE-03**: Operator sees the data type of each leaf tag in the tree (from the `type` or equivalent field in `realtimeData` documents)
+- [x] **TAGTREE-04**: `TagTreeBrowserPage` accepts `?db=<name>&connectionNumber=<N>` query parameters on load, enabling navigation from both `DatablockBrowserPage` and `S7PlusAlarmsViewerPage`
 
 ### Integration
 
-- [ ] **INTEGRATION-01**: In `S7PlusAlarmsViewerPage`, the `originDbName` cell is rendered as a clickable link; clicking opens `TagTreeBrowserPage` in a new browser tab pre-filtered to that datablock and connection
+- [x] **INTEGRATION-01**: In `S7PlusAlarmsViewerPage`, the `originDbName` cell is rendered as a clickable link; clicking opens `TagTreeBrowserPage` in a new browser tab pre-filtered to that datablock and connection
 
 ## Future Requirements
 
@@ -60,11 +60,11 @@
 | DBBROWSER-01 | Phase 14 | Complete |
 | DBBROWSER-02 | Phase 14 | Complete |
 | DBBROWSER-03 | Phase 14 | Complete |
-| TAGTREE-01 | Phase 15 | Pending |
-| TAGTREE-02 | Phase 15 | Pending |
-| TAGTREE-03 | Phase 15 | Pending |
-| TAGTREE-04 | Phase 15 | Pending |
-| INTEGRATION-01 | Phase 15 | Pending |
+| TAGTREE-01 | Phase 15 | Complete |
+| TAGTREE-02 | Phase 15 | Complete |
+| TAGTREE-03 | Phase 15 | Complete |
+| TAGTREE-04 | Phase 15 | Complete |
+| INTEGRATION-01 | Phase 15 | Complete |
 
 **Coverage:**
 - v1.4 requirements: 12 total
