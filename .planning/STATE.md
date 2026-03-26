@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: — Tag Tree Browser
-status: Ready to plan
-stopped_at: Completed 12-01-PLAN.md
-last_updated: "2026-03-26T08:12:03.041Z"
+status: Phase complete — ready for verification
+stopped_at: Completed 13-01-PLAN.md — all tasks done
+last_updated: "2026-03-26T10:59:55.190Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # Project State
@@ -20,12 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** Phase 12 — Driver — Datablock Persistence
+**Current focus:** Phase 13 — backend-api-datablocks-tag-endpoints
 
 ## Current Position
 
-Phase: 13
-Plan: Not started
+Phase: 13 (backend-api-datablocks-tag-endpoints) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: Not started
 | 10. API Cap Removal | 1/1 | ~5 min |
 | 11. Vue UI Enhancements | 2/2 | ~10 min |
 | Phase 12 P01 | 10 | 2 tasks | 2 files |
+| Phase 13-backend-api-datablocks-tag-endpoints P01 | 5m | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,7 @@ See PROJECT.md Key Decisions table for full log.
 - New-tab navigation via window.open + router.resolve().href (createWebHashHistory — no URL construction needed)
 - JWT must be in localStorage (not sessionStorage) for cross-tab auth to work
 - [Phase 12]: Upsert keyed on {connectionNumber, db_name} prevents duplicates on restart; UpsertDatablocks only called on browse success (stale data preserved on failure)
+- [Phase 13-backend-api-datablocks-tag-endpoints]: protocolSourceBrowsePath used in listS7PlusTagsForDb (not protocolSourceObjectAddress per D-01); touchS7PlusActiveTagRequests direct upsert without realtimeData lookup per D-02; source: 'tag-tree' set on activeTagRequests upserts
 
 ### Pending Todos
 
@@ -80,7 +82,7 @@ None.
 ## Session Continuity
 
 Last activity: 2026-03-26
-Last session: 2026-03-26T08:05:33.747Z
-Stopped at: Completed 12-01-PLAN.md
+Last session: 2026-03-26T10:59:55.184Z
+Stopped at: Completed 13-01-PLAN.md — all tasks done
 Resume file: None
 Next action: `/gsd:plan-phase 12`

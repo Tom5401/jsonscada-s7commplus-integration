@@ -12,9 +12,9 @@
 
 ### Backend API
 
-- [ ] **API-03**: `GET /Invoke/auth/listS7PlusDatablocks?connectionNumber=N` returns all datablock documents for the specified connection, sorted by `db_name`; admin-guarded consistent with other S7Plus endpoints
-- [ ] **API-04**: `GET /Invoke/auth/listS7PlusTagsForDb?connectionNumber=N&dbName=X` returns all `realtimeData` tag documents for that connection where `protocolSourceObjectAddress` starts with `"X"` (quoted DB name prefix); used by TagTreeBrowser to build the tree client-side
-- [ ] **API-05**: `POST /Invoke/auth/touchS7PlusActiveTagRequests` accepts an array of `{connectionNumber, protocolSourceObjectAddress}` pairs and upserts them into the `activeTagRequests` MongoDB collection with a refreshed TTL — enabling active OPC read polling for leaf tags that are currently visible in the tree
+- [x] **API-03**: `GET /Invoke/auth/listS7PlusDatablocks?connectionNumber=N` returns all datablock documents for the specified connection, sorted by `db_name`; admin-guarded consistent with other S7Plus endpoints
+- [x] **API-04**: `GET /Invoke/auth/listS7PlusTagsForDb?connectionNumber=N&dbName=X` returns all `realtimeData` tag documents for that connection where `protocolSourceObjectAddress` starts with `"X"` (quoted DB name prefix); used by TagTreeBrowser to build the tree client-side
+- [x] **API-05**: `POST /Invoke/auth/touchS7PlusActiveTagRequests` accepts an array of `{connectionNumber, protocolSourceObjectAddress}` pairs and upserts them into the `activeTagRequests` MongoDB collection with a refreshed TTL — enabling active OPC read polling for leaf tags that are currently visible in the tree
 
 ### DatablockBrowser
 
@@ -54,9 +54,9 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | DRIVER-03 | Phase 12 | Complete |
-| API-03 | Phase 13 | Pending |
-| API-04 | Phase 13 | Pending |
-| API-05 | Phase 13 | Pending |
+| API-03 | Phase 13 | Complete |
+| API-04 | Phase 13 | Complete |
+| API-05 | Phase 13 | Complete |
 | DBBROWSER-01 | Phase 14 | Pending |
 | DBBROWSER-02 | Phase 14 | Pending |
 | DBBROWSER-03 | Phase 14 | Pending |
