@@ -69,6 +69,9 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 ### Active (v1.4 in progress)
 
 - ✓ Driver stores full PLC datablock list in `s7plusDatablocks` MongoDB collection at startup, upserted on `{connectionNumber, db_name}` — Validated in Phase 12: driver-datablock-persistence
+- ✓ `GET /Invoke/auth/listS7PlusDatablocks` returns all datablocks for a connection, sorted by `db_name`, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
+- ✓ `GET /Invoke/auth/listS7PlusTagsForDb` returns realtimeData tags matching `protocolSourceBrowsePath` prefix for a given dbName, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
+- ✓ `POST /Invoke/auth/touchS7PlusActiveTagRequests` bulk-upserts tag requests into `activeTagRequests` with `source: 'tag-tree'` and TTL, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
 
 ### Out of Scope
 
@@ -158,4 +161,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 — Phase 12 complete: s7plusDatablocks collection now populated at driver startup*
+*Last updated: 2026-03-26 — Phase 13 complete: three backend API endpoints for datablock list, tag list, and active tag requests now available*
