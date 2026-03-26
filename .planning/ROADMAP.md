@@ -129,7 +129,7 @@ Plans:
 | 9. Driver Enrichment | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 10. API Cap Removal | v1.3 | 1/1 | Complete | 2026-03-25 |
 | 11. Vue UI Enhancements | v1.3 | 2/2 | Complete | 2026-03-25 |
-| 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete   | 2026-03-26 |
+| 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete    | 2026-03-26 |
 | 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 0/? | Not started | - |
 | 14. DatablockBrowser | v1.4 | 0/? | Not started | - |
 | 15. TagTreeBrowser & Integration | v1.4 | 0/? | Not started | - |
