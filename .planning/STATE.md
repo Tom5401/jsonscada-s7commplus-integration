@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: — Tag Tree Browser
-status: Ready to plan
-stopped_at: Completed 13-01-PLAN.md — all tasks done
-last_updated: "2026-03-26T11:03:02.250Z"
+status: Phase complete — ready for verification
+stopped_at: 14-01-PLAN.md complete — all tasks done
+last_updated: "2026-03-26T12:02:22.463Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -20,12 +20,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-26)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** Phase 13 — backend-api-datablocks-tag-endpoints
+**Current focus:** Phase 14 — datablockbrowser
 
 ## Current Position
 
-Phase: 14
-Plan: Not started
+Phase: 14 (datablockbrowser) — EXECUTING
+Plan: 1 of 1
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: Not started
 | 11. Vue UI Enhancements | 2/2 | ~10 min |
 | Phase 12 P01 | 10 | 2 tasks | 2 files |
 | Phase 13-backend-api-datablocks-tag-endpoints P01 | 5m | 2 tasks | 1 files |
+| Phase 14 P01 | 2min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,8 @@ See PROJECT.md Key Decisions table for full log.
 - JWT must be in localStorage (not sessionStorage) for cross-tab auth to work
 - [Phase 12]: Upsert keyed on {connectionNumber, db_name} prevents duplicates on restart; UpsertDatablocks only called on browse success (stale data preserved on failure)
 - [Phase 13-backend-api-datablocks-tag-endpoints]: protocolSourceBrowsePath used in listS7PlusTagsForDb (not protocolSourceObjectAddress per D-01); touchS7PlusActiveTagRequests direct upsert without realtimeData lookup per D-02; source: 'tag-tree' set on activeTagRequests upserts
+- [Phase 14]: selectedConnection initialized to null (no pre-selection on load per D-01)
+- [Phase 14]: window.open with /#/s7plus-tag-tree hash URL for new-tab navigation (createWebHashHistory requires # prefix)
 
 ### Pending Todos
 
@@ -82,7 +85,7 @@ None.
 ## Session Continuity
 
 Last activity: 2026-03-26
-Last session: 2026-03-26T10:59:55.184Z
-Stopped at: Completed 13-01-PLAN.md — all tasks done
+Last session: 2026-03-26T12:02:22.456Z
+Stopped at: 14-01-PLAN.md complete — all tasks done
 Resume file: None
 Next action: `/gsd:plan-phase 12`

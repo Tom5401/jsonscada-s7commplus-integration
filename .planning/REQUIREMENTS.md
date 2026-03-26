@@ -18,9 +18,9 @@
 
 ### DatablockBrowser
 
-- [ ] **DBBROWSER-01**: Operator can see all datablocks on a connected PLC (showing `db_name` and `db_number`) via a new `DatablockBrowserPage` added to the AdminUI navigation menu
-- [ ] **DBBROWSER-02**: Operator can filter the datablock list to a specific PLC using a connection selector dropdown
-- [ ] **DBBROWSER-03**: Operator can open `TagTreeBrowserPage` for a specific datablock by clicking on a row; the tag browser opens in a new browser tab
+- [x] **DBBROWSER-01**: Operator can see all datablocks on a connected PLC (showing `db_name` and `db_number`) via a new `DatablockBrowserPage` added to the AdminUI navigation menu
+- [x] **DBBROWSER-02**: Operator can filter the datablock list to a specific PLC using a connection selector dropdown
+- [x] **DBBROWSER-03**: Operator can open `TagTreeBrowserPage` for a specific datablock by clicking on a row; the tag browser opens in a new browser tab
 
 ### TagTreeBrowser
 
@@ -57,9 +57,9 @@
 | API-03 | Phase 13 | Complete |
 | API-04 | Phase 13 | Complete |
 | API-05 | Phase 13 | Complete |
-| DBBROWSER-01 | Phase 14 | Pending |
-| DBBROWSER-02 | Phase 14 | Pending |
-| DBBROWSER-03 | Phase 14 | Pending |
+| DBBROWSER-01 | Phase 14 | Complete |
+| DBBROWSER-02 | Phase 14 | Complete |
+| DBBROWSER-03 | Phase 14 | Complete |
 | TAGTREE-01 | Phase 15 | Pending |
 | TAGTREE-02 | Phase 15 | Pending |
 | TAGTREE-03 | Phase 15 | Pending |

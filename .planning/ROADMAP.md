@@ -61,7 +61,7 @@ Full details: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 
 - [x] **Phase 12: Driver — Datablock Persistence** - C# driver writes the full PLC datablock list to MongoDB at startup (completed 2026-03-26)
 - [x] **Phase 13: Backend API — Datablocks & Tag Endpoints** - Three new HTTP endpoints expose datablock list, realtimeData tags, and activeTagRequests upsert (completed 2026-03-26)
-- [ ] **Phase 14: DatablockBrowser** - New AdminUI page listing all PLC datablocks with connection selector and row-level navigation to TagTreeBrowser
+- [x] **Phase 14: DatablockBrowser** - New AdminUI page listing all PLC datablocks with connection selector and row-level navigation to TagTreeBrowser (completed 2026-03-26)
 - [ ] **Phase 15: TagTreeBrowser & Integration** - Lazy tag tree with live values, URL-param bootstrap, and alarms viewer link integration
 
 ## Phase Details
@@ -100,9 +100,9 @@ Plans:
   2. The page displays all datablocks for the selected connection, showing `db_name` and `db_number` per row
   3. A connection selector dropdown lets the operator filter the list to a specific PLC connection
   4. Clicking a datablock row opens `TagTreeBrowserPage` in a new browser tab, pre-scoped to that datablock and connection
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 14-01-PLAN.md — Create DatablockBrowserPage component with connection selector, datablock table, and Browse Tags navigation
+- [x] 14-01-PLAN.md — Create DatablockBrowserPage component with connection selector, datablock table, and Browse Tags navigation
 
 ### Phase 15: TagTreeBrowser & Integration
 **Goal**: Operators can lazy-expand any datablock's tag hierarchy with live values auto-refreshing every 5 seconds, and can reach the tree directly by clicking an alarm's origin DB name in the alarms viewer
@@ -134,5 +134,5 @@ Plans:
 | 11. Vue UI Enhancements | v1.3 | 2/2 | Complete | 2026-03-25 |
 | 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete    | 2026-03-26 |
 | 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 1/1 | Complete    | 2026-03-26 |
-| 14. DatablockBrowser | v1.4 | 0/1 | Planned | - |
+| 14. DatablockBrowser | v1.4 | 1/1 | Complete   | 2026-03-26 |
 | 15. TagTreeBrowser & Integration | v1.4 | 0/? | Not started | - |
