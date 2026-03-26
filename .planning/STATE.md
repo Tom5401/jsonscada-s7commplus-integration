@@ -1,16 +1,16 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-status: v1.3 milestone complete
-stopped_at: 11-02-PLAN.md complete — all tasks done, human-verify approved
-last_updated: "2026-03-25T18:35:58.325Z"
-last_activity: 2026-03-25
+milestone: v1.4
+milestone_name: Tag Tree Browser
+status: v1.4 in progress — Phase 15 complete
+stopped_at: 15-01-PLAN.md complete — all tasks done
+last_updated: "2026-03-26T00:00:00.000Z"
+last_activity: 2026-03-26
 progress:
-  total_phases: 3
-  completed_phases: 3
-  total_plans: 4
-  completed_plans: 4
+  total_phases: 4
+  completed_phases: 4
+  total_plans: 1
+  completed_plans: 1
 ---
 
 # Project State
@@ -19,13 +19,13 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-24)
 
-**Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription — not polling — with full metadata (text, timestamp, ack state, associated values)
-**Current focus:** v1.3 complete — run `/gsd:new-milestone` to plan next milestone
+**Core value:** Operators can navigate all PLC datablocks and their tag hierarchies from AdminUI, with live values for configured tags — turning a flat unmanageable tag list into a TIA Portal-style tree browser.
+**Current focus:** Phase 15 (TagTreeBrowser & Integration) complete — v1.4 milestone deliverables done
 
 ## Current Position
 
-Phase 11 (vue-ui-enhancements) — COMPLETE
-Plan 2 of 2 — COMPLETE
+Phase 15 (tagtreebrowser-integration) — COMPLETE
+Plan 1 of 1 — COMPLETE
 
 ## Performance Metrics
 
@@ -51,6 +51,10 @@ Plan 2 of 2 — COMPLETE
 | 9. Driver Enrichment | 1/1 | ~10 min |
 | 10. API Cap Removal | 1/1 | ~5 min |
 | 11. Vue UI Enhancements | 2/2 | ~10 min |
+| 12. Driver — Datablock Persistence | 1/1 | ~30 min |
+| 13. Backend API — Datablocks & Tags | 1/1 | ~15 min |
+| 14. DatablockBrowser | 1/1 | ~20 min |
+| 15. TagTreeBrowser & Integration | 1/1 | ~15 min |
 
 ## Accumulated Context
 
@@ -66,6 +70,13 @@ See PROJECT.md Key Decisions table for full log.
 - [Phase 11-vue-ui-enhancements]: isAcknowledgeable === false strict equality preserves backward compat with pre-Phase 9 alarm documents
 - [Phase 11-vue-ui-enhancements]: currentPage ref + v-model:page on v-data-table; fetchAlarms never resets page — zero-cost page preservation
 - [Phase 11-vue-ui-enhancements]: connectionFilter follows exact same computed pattern as alarmClassFilter; ackAllCount scoped to filteredAlarms; executeAckAll uses alarm.connectionId for ackAlarm call
+
+**v1.4 decisions:**
+
+- [Phase 15-tagtreebrowser]: buildTree uses protocolSourceBrowsePath (not protocolSourceObjectAddress) for tree construction — cleaner parsing (no quote stripping needed); leaf nodes use children: undefined to prevent expand arrow
+- [Phase 15-tagtreebrowser]: patchLeafValues updates leaf .value in-place without replacing treeItems array — preserves v-model:opened expand state across 5s refresh cycles
+- [Phase 15-tagtreebrowser]: getExpandedLeafTags guards against empty tag array before touch call — backend rejects empty array with 400
+- [Phase 15-tagtreebrowser]: originDbName link uses item.connectionId directly as connectionNumber — confirmed in CONTEXT.md that connectionId field IS the connection number on alarm documents
 
 ### Pending Todos
 
@@ -84,8 +95,8 @@ None — milestone v1.3 complete.
 
 ## Session Continuity
 
-Last activity: 2026-03-25
-Last session: 2026-03-25T18:10:00.000Z
-Stopped at: 11-02-PLAN.md complete — all tasks done, human-verify approved
+Last activity: 2026-03-26
+Last session: 2026-03-26T00:00:00.000Z
+Stopped at: 15-01-PLAN.md complete — all tasks done
 Resume file: None
-Next action: `/gsd:new-milestone` to start v1.4 planning
+Next action: Human-verify Phase 15 TagTreeBrowserPage in browser; complete v1.4 milestone
