@@ -100,8 +100,9 @@ Plans:
   2. The page displays all datablocks for the selected connection, showing `db_name` and `db_number` per row
   3. A connection selector dropdown lets the operator filter the list to a specific PLC connection
   4. Clicking a datablock row opens `TagTreeBrowserPage` in a new browser tab, pre-scoped to that datablock and connection
-**Plans**: TBD
-**UI hint**: yes
+**Plans:** 1 plan
+Plans:
+- [ ] 14-01-PLAN.md — Create DatablockBrowserPage component with connection selector, datablock table, and Browse Tags navigation
 
 ### Phase 15: TagTreeBrowser & Integration
 **Goal**: Operators can lazy-expand any datablock's tag hierarchy with live values auto-refreshing every 5 seconds, and can reach the tree directly by clicking an alarm's origin DB name in the alarms viewer
@@ -133,5 +134,5 @@ Plans:
 | 11. Vue UI Enhancements | v1.3 | 2/2 | Complete | 2026-03-25 |
 | 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete    | 2026-03-26 |
 | 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 1/1 | Complete    | 2026-03-26 |
-| 14. DatablockBrowser | v1.4 | 0/? | Not started | - |
+| 14. DatablockBrowser | v1.4 | 0/1 | Planned | - |
 | 15. TagTreeBrowser & Integration | v1.4 | 0/? | Not started | - |
