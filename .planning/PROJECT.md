@@ -66,9 +66,9 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ Ack All bulk action with confirmation dialog showing count; sequential loop, single failure non-blocking — Validated in Phase 11: vue-ui-enhancements
 - ✓ Page preserved across 5-second auto-refresh via `v-model:page` — Validated in Phase 11: vue-ui-enhancements
 
-### Active
+### Active (v1.4 in progress)
 
-*(v1.4 in progress — requirements defined, roadmap pending)*
+- ✓ Driver stores full PLC datablock list in `s7plusDatablocks` MongoDB collection at startup, upserted on `{connectionNumber, db_name}` — Validated in Phase 12: driver-datablock-persistence
 
 ### Out of Scope
 
@@ -158,4 +158,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 — milestone v1.4 started*
+*Last updated: 2026-03-26 — Phase 12 complete: s7plusDatablocks collection now populated at driver startup*
