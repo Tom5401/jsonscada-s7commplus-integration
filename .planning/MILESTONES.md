@@ -1,5 +1,16 @@
 # Milestones
 
+## v1.4 Tag Tree Browser (Shipped: 2026-03-27)
+
+**Phases completed:** 4 phases, 4 plans, 2 tasks
+
+**Key accomplishments:**
+
+- Bulk-upsert of full PLC datablock list to MongoDB s7plusDatablocks collection at driver startup, with unique compound index and idempotent restart behavior
+- One-liner:
+
+---
+
 ## v1.3 Alarm Viewer Enhancements (Shipped: 2026-03-25)
 
 **Phases completed:** 3 phases, 4 plans, 3 tasks
