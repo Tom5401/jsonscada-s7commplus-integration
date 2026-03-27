@@ -138,6 +138,53 @@
 
 ---
 
+## Milestone: v1.4 — Tag Tree Browser
+
+**Shipped:** 2026-03-27
+**Phases:** 4 (12–15) | **Plans:** 4
+
+### What Was Built
+
+- C# driver upserts full PLC datablock list into `s7plusDatablocks` MongoDB collection at startup — idempotent compound index on `{connectionNumber, db_name}` (Phase 12)
+- Three new admin-guarded HTTP endpoints: `listS7PlusDatablocks`, `listS7PlusTagsForDb`, `touchS7PlusActiveTagRequests` — thin MongoDB reads/writes, no PLC calls at query time (Phase 13)
+- `DatablockBrowserPage.vue` with connection dropdown, datablocks table, "Browse Tags" per-row navigation to TagTreeBrowser in new tab (Phase 14)
+- `TagTreeBrowserPage.vue` with hierarchical tag tree, 5s in-place value refresh preserving expand state, touch-on-expand TTL extension, auto-expand first level; `originDbName` cells in S7PlusAlarmsViewerPage wired as clickable links (Phase 15)
+- **Post-execution bug fix:** `buildTree` was using `protocolSourceBrowsePath` (parent path, strips last segment) instead of `ungroupedDescription` (full `varInfo.Name`) — structured datablocks with nested UDT folders showed empty tree; flat datablocks worked by accident
+
+### What Worked
+
+- **Shallow phase dependency chain** — each phase was a clean vertical slice (driver → backend → frontend page → frontend integration). No cross-phase coordination required at execution time; phases could be planned and executed independently.
+- **Verifier caught the deployment gap immediately** — executor ran in an isolated worktree; the verifier spotted that the json-scada submodule pointer in the parent repo was never updated. Without the verifier, the bug would have shipped silently.
+- **UDT/structured datablock bug found in live testing** — the `protocolSourceBrowsePath` vs `ungroupedDescription` confusion was a data model misunderstanding carried from planning. Live testing against real structured datablocks found it in minutes. Root cause was clear once the data shape was traced through `AddFlatSubnodes` → `ExtractPathFromName`.
+
+### What Was Inefficient
+
+- **Worktree merge friction** — executor committed to an isolated worktree's json-scada submodule. Merging required `git fetch` from the worktree path, manual conflict resolution in 3 `.planning/` files, and manual `git checkout --theirs` for the submodule pointer. The submodule-within-worktree combination is inherently friction-heavy.
+- **OAuth token expiry mid-verifier** — first verifier invocation expired mid-run (55k tokens consumed, 68 tool uses, no output). Retry was immediate. No data loss, but wasted one full verifier run. Prevention: none practical for token-lifetime issues.
+- **`protocolSourceBrowsePath` misunderstanding in planning** — the CONTEXT.md example showed `"DBName.SubStruct.Tag"` as the format, but the actual field is the parent path `"DBName.SubStruct"`. Tracing `ExtractPathFromName` in `TagMapping.cs` would have caught this at plan time. Prevention: for data fields derived by code, trace the derivation chain to the source before writing the algorithm.
+
+### Patterns Established
+
+- `ungroupedDescription` (= `varInfo.Name`) is the authoritative full hierarchical path for a realtimeData tag — use for any tree construction or path-based grouping; `protocolSourceBrowsePath` is the parent path only
+- Worktree executor + submodule: after merge, always verify submodule HEAD in the parent repo points to the expected commit before continuing (`git submodule status`)
+- `patchLeafValues` in-place mutation with `docMap` keyed by full path preserves v-treeview `v-model:opened` state across 5s refresh cycles — do not replace `treeItems.value` reference
+
+### Key Lessons
+
+1. **Trace data derivation chains in C# before writing Vue algorithms.** The `ExtractPathFromName` call in `TagMapping.cs` removed the leaf segment; planning documentation showed the wrong format. Always grep the driver source when a field's derivation is non-obvious.
+2. **Verify the submodule pointer after every worktree merge.** A successful merge commit may leave the submodule reference unchanged if the inner submodule commit doesn't exist in the outer working tree. `git submodule status` showing a `+` prefix is the signal.
+3. **The verifier is worth running even on small, high-confidence phases.** This milestone's single verifier run caught both the deployment gap AND confirmed the structured-datablock bug was real — two issues that would have required live debugging to find otherwise.
+
+### Cost Observations
+
+- Sessions: 1 (execution + live testing + bug fix in single context)
+- All 4 phases executed across 2 days (2026-03-26–27)
+- Worktree merge friction: ~20 min (submodule fetch, conflict resolution, verification)
+- OAuth retry for verifier: ~1 min overhead
+- Structured datablock bug fix: ~15 min (root cause analysis + one-line fix)
+
+---
+
 ## Cross-Milestone Trends
 
 | Milestone | Phases | Plans | Bugs Found in UAT | Post-Execution Fixes |
@@ -145,3 +192,4 @@
 | v1.0 PoC  | 1      | 2     | 1 (timeout exit)  | 4 (timeout, log level, additionalTexts, placeholder resolution) |
 | v1.2 Origin & Cleanup | 4 | 4 | 0 (no live UAT) | 1 (Phase 4 branch recovery — cherry-pick of 3 ack commits) |
 | v1.3 Alarm Viewer Enhancements | 3 | 4 | 0 (human checkpoints approved first pass) | 0 |
+| v1.4 Tag Tree Browser | 4 | 4 | 1 (structured datablocks empty) | 1 (ungroupedDescription fix) |
