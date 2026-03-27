@@ -62,7 +62,7 @@ Full details: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 - [x] **Phase 12: Driver — Datablock Persistence** - C# driver writes the full PLC datablock list to MongoDB at startup (completed 2026-03-26)
 - [x] **Phase 13: Backend API — Datablocks & Tag Endpoints** - Three new HTTP endpoints expose datablock list, realtimeData tags, and activeTagRequests upsert (completed 2026-03-26)
 - [x] **Phase 14: DatablockBrowser** - New AdminUI page listing all PLC datablocks with connection selector and row-level navigation to TagTreeBrowser (completed 2026-03-26)
-- [ ] **Phase 15: TagTreeBrowser & Integration** - Lazy tag tree with live values, URL-param bootstrap, and alarms viewer link integration
+- [x] **Phase 15: TagTreeBrowser & Integration** - Lazy tag tree with live values, URL-param bootstrap, and alarms viewer link integration (completed 2026-03-27)
 
 ## Phase Details
 
@@ -114,7 +114,7 @@ Plans:
   3. Leaf tag nodes show the data type from the corresponding `realtimeData` document
   4. Live tag values update automatically every 5 seconds for all currently expanded leaf tags; expanding a node triggers a `touchS7PlusActiveTagRequests` call for those tags
   5. In `S7PlusAlarmsViewerPage`, each `originDbName` cell is a clickable link that opens `TagTreeBrowserPage` in a new browser tab pre-filtered to that datablock and connection
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
 - [x] 15-01-PLAN.md — Create TagTreeBrowserPage with tree hierarchy, live values, and alarms viewer originDbName link integration
 
@@ -136,4 +136,4 @@ Plans:
 | 12. Driver — Datablock Persistence | v1.4 | 1/1 | Complete    | 2026-03-26 |
 | 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 1/1 | Complete    | 2026-03-26 |
 | 14. DatablockBrowser | v1.4 | 1/1 | Complete    | 2026-03-26 |
-| 15. TagTreeBrowser & Integration | v1.4 | 1/1 | Complete    | 2026-03-26 |
+| 15. TagTreeBrowser & Integration | v1.4 | 1/1 | Complete    | 2026-03-27 |
