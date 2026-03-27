@@ -4,17 +4,17 @@
 
 A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus alarm subscriptions into json-scada with full alarm management capability. The driver (S7CommPlusClient) connects to Siemens S7-1200/S7-1500 PLCs using the reverse-engineered S7CommPlus protocol, subscribes to alarm events, writes alarm state, text, timestamps, acknowledgement status, origin DB name, and associated data values into a dedicated MongoDB collection, and sends acknowledgement commands back to the PLC. A dedicated S7Plus Alarms Viewer in AdminUI provides operators with a TIA Portal-equivalent interface including origin columns and alarm history deletion.
 
-**Shipped:** v1.2 — Alarm origin enrichment and history deletion validated 2026-03-24. Full alarm management loop (subscribe → display → ack → delete) complete.
+**Shipped:** v1.4 — Tag Tree Browser milestone complete 2026-03-27. Full operator workflow: alarms → origin DB name → tag tree with live values.
 
-## Current Milestone: v1.4 Tag Tree Browser
+## Shipped: v1.4 Tag Tree Browser (2026-03-27)
 
 **Goal:** Mirror TIA Portal's hierarchical tag browsing in AdminUI — operators can navigate datablock structure, see live values for configured tags, and open a tag tree directly from the alarms viewer.
 
-**Target features:**
-- DatablockBrowser page — lists all PLC datablocks in a tree, added to AdminUI main menu
-- TagTreeBrowser page — lazy tree expansion of tags within a datablock with live values from realtimeData
-- Backend: new MongoDB collection + HTTP endpoints for datablock list and on-demand type info browse
-- S7AlarmsViewer integration — clickable origin DB name opens TagTreeBrowser in a new browser window
+**Delivered:**
+- DatablockBrowser page — lists all PLC datablocks in a table, added to AdminUI main menu
+- TagTreeBrowser page — hierarchical tag tree (folder/leaf) with live values auto-refreshing every 5 seconds, touch-on-expand, auto-expand first level
+- Backend: `s7plusDatablocks` MongoDB collection + 3 HTTP endpoints (listS7PlusDatablocks, listS7PlusTagsForDb, touchS7PlusActiveTagRequests)
+- S7AlarmsViewer integration — `originDbName` cells render as clickable links opening TagTreeBrowser in a new tab
 
 ## Shipped: v1.3 Alarm Viewer Enhancements & Priority (2026-03-25)
 
@@ -66,13 +66,15 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ Ack All bulk action with confirmation dialog showing count; sequential loop, single failure non-blocking — Validated in Phase 11: vue-ui-enhancements
 - ✓ Page preserved across 5-second auto-refresh via `v-model:page` — Validated in Phase 11: vue-ui-enhancements
 
-### Active (v1.4 in progress)
+### Validated (v1.4)
 
 - ✓ Driver stores full PLC datablock list in `s7plusDatablocks` MongoDB collection at startup, upserted on `{connectionNumber, db_name}` — Validated in Phase 12: driver-datablock-persistence
 - ✓ `GET /Invoke/auth/listS7PlusDatablocks` returns all datablocks for a connection, sorted by `db_name`, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
 - ✓ `GET /Invoke/auth/listS7PlusTagsForDb` returns realtimeData tags matching `protocolSourceBrowsePath` prefix for a given dbName, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
 - ✓ `POST /Invoke/auth/touchS7PlusActiveTagRequests` bulk-upserts tag requests into `activeTagRequests` with `source: 'tag-tree'` and TTL, admin-guarded — Validated in Phase 13: backend-api-datablocks-tag-endpoints
 - ✓ `DatablockBrowserPage.vue` at `/s7plus-datablocks` — connection dropdown (starts empty), datablock table (db_name + db_number), per-row "Browse Tags" button opens TagTreeBrowser in new tab — Validated in Phase 14: datablockbrowser
+- ✓ `TagTreeBrowserPage.vue` at `/s7plus-tag-tree` — hierarchical tree from `ungroupedDescription` full path, 5s in-place value refresh, touch-on-expand, auto-expand first level; structured datablocks (nested UDT structs) render folder/leaf hierarchy correctly — Validated in Phase 15: tagtreebrowser-integration
+- ✓ `originDbName` cells in S7PlusAlarmsViewerPage render as clickable links (non-empty) opening TagTreeBrowser in new tab with `db=` and `connectionNumber=` params — Validated in Phase 15: tagtreebrowser-integration
 
 ### Out of Scope
 
@@ -87,12 +89,13 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ## Context
 
-**Current state (v1.3 shipped 2026-03-25):**
-- 11 phases complete across 4 milestones (v1.0–v1.3)
-- Full alarm management loop: subscribe → store with metadata → display → filter/sort → ack → delete
-- S7PlusAlarmsViewerPage.vue: combined timestamp, sortable priority, ack indicator, source filter, Ack All bulk action, page preservation, Delete/Delete Filtered
-- MongoDB `s7plusAlarmEvents`: 18 fields per document including `isAcknowledgeable`, resolved `alarmText`/`infoText`, `priority`, `originDbName`, `dbNumber`, `relationId`
-- API: no alarm count ceiling, `{ createdAt: -1 }` index for query performance
+**Current state (v1.4 shipped 2026-03-27):**
+- 15 phases complete across 5 milestones (v1.0–v1.4)
+- Full operator workflow: subscribe alarms → display with metadata → ack/delete → click origin DB → browse tag tree with live values
+- TagTreeBrowserPage.vue: hierarchical tree from `ungroupedDescription` full path; structured datablocks with nested UDT structs render as folder/leaf hierarchy; 5s in-place value refresh preserving expand state; touch-on-expand to extend TTL
+- DatablockBrowserPage.vue: connection dropdown, datablock table, "Browse Tags" button
+- S7PlusAlarmsViewerPage.vue: `originDbName` column clickable link → TagTreeBrowser in new tab
+- Bug fix: `protocolSourceBrowsePath` is the parent path (not leaf path) — tree must use `ungroupedDescription` (= `varInfo.Name`) for correct folder/leaf construction
 - Validated against: PLCSIM Advanced V8, TIA Portal v21, S7-1515 PLC, Windows VM
 
 **Last state (v1.2):**
@@ -162,4 +165,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-26 — Phase 14 complete: DatablockBrowserPage frontend at /s7plus-datablocks — operators can browse PLC datablocks by connection and navigate to TagTreeBrowser in a new tab*
+*Last updated: 2026-03-27 — Phase 15 complete: TagTreeBrowserPage at /s7plus-tag-tree and alarms viewer integration — v1.4 Tag Tree Browser milestone complete*
