@@ -1,17 +1,17 @@
 # Project Research Summary
 
-**Project:** v1.4 Tag Tree Browser (DatablockBrowser + TagTreeBrowser)
-**Domain:** TIA Portal-equivalent hierarchical PLC tag browser — S7CommPlus / Vue 3 / MongoDB SCADA
-**Researched:** 2026-03-26
+**Project:** TagTreeBrowser Overhaul — v1.5
+**Domain:** Industrial SCADA Tag Browser (Vue 3 + Vuetify 3 + Node.js + MongoDB)
+**Researched:** 2026-03-30
 **Confidence:** HIGH
 
 ## Executive Summary
 
-v1.4 adds a TIA Portal-style tag browser to the existing json-scada S7CommPlus SCADA stack. The milestone splits into two new AdminUI pages: a `DatablockBrowserPage` listing all datablocks on the connected PLC, and a `TagTreeBrowserPage` providing lazy, on-demand expansion of each datablock's type hierarchy. No new npm packages are required — `v-treeview` ships with the already-installed Vuetify 3.10.12, and `router.resolve() + window.open()` handles new-tab navigation using the existing Vue Router 4. The backend pattern is equally conservative: the C# driver writes the datablock list to a new MongoDB collection at startup, and per-node type-info is fetched on demand via the existing `commandsQueue` change-stream mechanism, with results cached in a second new collection. Node.js reads only from MongoDB, keeping the event loop non-blocking.
+v1.5 is a focused overhaul of an existing, working Vue 3 component (`TagTreeBrowserPage.vue`) in the json-scada AdminUI. All four targeted features — lazy tree loading, boolean value display, value writing, and non-datablock tag support — are additions to the current codebase, not greenfield work. No new npm packages are required. Every capability needed (Vuetify `load-children`, OPC WriteRequest endpoint, commandsQueue write path, non-datablock tag storage) is either already installed or already running in the codebase. The primary work is replacing the v1.4 pattern of eagerly loading all tags for a DB with an on-demand child-fetch pattern, and surfacing infrastructure that already exists but is not yet wired to the tree UI.
 
-The recommended architecture separates all PLC browse traffic onto a **third, dedicated `S7CommPlusConnection`**, following the v1.2 precedent of an isolated `alarmConn`. This is not optional — reusing either the tag or alarm connection for browse PDUs causes PDU interleaving that can silently corrupt tag values or terminate the connection. The full feature set follows a strict dependency chain: driver startup writes must precede the API endpoint, which must precede the Vue pages, which must precede the alarms-viewer integration. Sequencing phases along this chain is the primary constraint on roadmap structure.
+The recommended approach is sequential by dependency: first add the new `listS7PlusChildNodes` backend endpoint (exact `protocolSourceBrowsePath` equality match), then rewrite the tree's initial load and expand behavior around Vuetify's `load-children` prop, then layer in the boolean display fix, write dialog, and non-datablock rows on top of the working lazy foundation. The write path must route through the existing `/Invoke/` OPC WriteRequest handler — not a new endpoint — to preserve the `canSendCommands` authorization check, SOE log entry, and userActions audit trail that the existing handler provides.
 
-The two highest risks for this milestone are (1) the PDU-interleaving problem if the browse connection is not isolated, and (2) a cluster of Vuetify `v-treeview` bugs that can cause infinite loops (duplicate node names), duplicate children (rapid expand-collapse), and performance degradation on large PLCs. Both risks have concrete, low-cost mitigations that must be baked in at the component-design level before writing the first line of Vue code.
+The two highest risks are both Vuetify-specific: (1) `load-children` only fires when a node's `children` property is an empty array `[]` — `undefined` renders as a leaf with no expand toggle, making depth-2+ nodes silently unreachable; (2) children must be mutated in place (`push`) not replaced by reference assignment, which silently breaks Vuetify's internal reactivity model. Both are confirmed from direct inspection of Vuetify 3.10 source and are easy to avoid if the node shape contract is established before any tree code is written.
 
 ---
 
@@ -19,149 +19,115 @@ The two highest risks for this milestone are (1) the PDU-interleaving problem if
 
 ### Recommended Stack
 
-The core stack is entirely unchanged from v1.3. Vuetify 3.10.12 includes `v-treeview` with a `load-children` prop that supports async lazy loading — this is the correct component for the TagTreeBrowser. The DatablockBrowser flat list should use `v-list` with `v-virtual-scroll` rather than `v-treeview` to avoid a confirmed Vuetify 3 performance regression on flat lists. New-window navigation uses `router.resolve().href` + `window.open()` against the existing `createWebHashHistory` router; no URL construction needs to be manual.
+No new dependencies. The installed stack (Vuetify 3.10.12, Vue 3.4.x, vue-router 4.4.x, Vite 7.3.x) provides every capability required. Vuetify 3.10's `v-treeview` `load-children` prop is confirmed working from direct source inspection of `VTreeviewChildren.js`. The known 3.7.1 regression (GitHub #20450) predates the installed version.
 
-**Core technologies (all already installed):**
-- `v-treeview` (Vuetify 3.10.12, built-in): lazy tree rendering via `load-children` async prop — no new packages
-- `v-list` + `v-virtual-scroll` (Vuetify 3.10.12, built-in): flat DatablockBrowser list — avoids v-treeview perf regression on large lists
-- `vue-router` 4.4.x: `router.resolve().href` + `window.open()` for new-tab launch — resilient to hash-history base-path changes
-- MongoDB `commandsQueue` (existing): async dispatch of browse requests to C# driver — same pattern as alarm ack
-- Two new MongoDB collections (`s7plusDatablocks`, `s7plusTypeInfoCache`): decouple PLC latency from Node.js response time
-
-See `.planning/research/STACK.md` for full version evidence, code snippets, and alternatives considered.
+**Core technologies:**
+- **Vuetify 3.10 v-treeview with `load-children`**: lazy tree expansion — fires once per node when `children.length === 0`; confirmed in installed `VTreeviewChildren.js:60-64`
+- **MongoDB exact `protocolSourceBrowsePath` match**: direct-children query — returns only one depth level per expand; enables compound index `{protocolSourceConnectionNumber, protocolSourceBrowsePath}` to be fully exploited
+- **Existing `/Invoke/` OPC WriteRequest (ServiceId 676)**: value write path — already handles auth, SOE logging, commandsQueue insert; reuse is mandatory, not optional
+- **`commandsQueue` + S7CommPlusClient change stream**: write execution path — driver already watches this collection and calls `WriteValues()`; no driver change needed for the write feature
 
 ### Expected Features
 
-**Must have (table stakes — all P1):**
-- `s7plusDatablocks` MongoDB collection populated by C# driver at startup — all browser features depend on this
-- `GET /Invoke/auth/listS7PlusDatablocks` endpoint — identical pattern to `listS7PlusAlarms`
-- `DatablockBrowserPage.vue` with DB name, DB number, and Browse button per row
-- Connection selector in DatablockBrowserPage (multi-PLC deployments)
-- AdminUI nav drawer entry for DatablockBrowser
-- `TagTreeBrowserPage.vue` with lazy tree expansion via `load-children` and `getTypeInfoByRelId`
-- Variable name and data type columns in TagTreeBrowser (Softdatatype from `PVartypeListElement`)
-- 1-dimensional array member expansion with `varName[0]` index notation (GUIBrowser Form1.cs is reference)
-- Live value column from `realtimeData` for configured tags; "—" for unconfigured tags; 5 s auto-refresh
-- `S7PlusAlarmsViewerPage.vue`: `originDbName` cell becomes a clickable link opening TagTreeBrowser in new tab
-- TagTreeBrowser accepts `?db=<name>` query parameter; resolves `ti_relid` on page load
+**Must have (table stakes — all v1.5):**
+- **TRUE/FALSE display for boolean tags** — frontend-only one-line fix; `0`/`1` is observably wrong compared to the tabular view; zero risk
+- **Lazy tree loading** — prevents browser freeze on 100k+ tag databases; requires new `listS7PlusChildNodes` backend endpoint returning direct children via exact `protocolSourceBrowsePath` match
+- **Value refresh scoped to expanded/visible nodes** — necessary companion to lazy loading; existing `touchExpandedLeafTags()` mechanism already provides the scaffold
 
-**Should have (differentiators — add after P1 validation):**
-- Node type icons per Softdatatype category (MDI icons — matches TIA Portal visual language)
-- Client-side datablock name filter in DatablockBrowser (computed filter, zero backend change)
-- Last-updated timestamp next to live value (uses existing `updatedAt` field in `realtimeData`)
+**Should have (differentiators — all v1.5):**
+- **Write/push values from tree leaf nodes** — operators can test PLC I/O without context-switching to tabular view; requires new `PushValueDialog.vue` and routes through existing OPC write infrastructure
+- **Non-datablock tags (MArea, QArea, IArea) in DatablockBrowser** — memory bits and I/O areas are browsed by the driver and stored in `realtimeData` but currently invisible in the UI
+
+**Defer (v1.x post-validation):**
+- Write ack feedback (poll `commandsQueue` for `delivered: true`)
+- Configurable refresh interval
 
 **Defer (v2+):**
-- Write-back / force tag values from browser (requires SBO logic, access control, command queue extension)
-- `activeTagRequests` insertion from browser (on-demand polling trigger for unconfigured tags)
-- Multi-dimensional array expansion (1-dim covers the majority of real PLC programs)
-- Export tag list to CSV/Excel
-
-See `.planning/research/FEATURES.md` for full dependency graph and per-feature implementation notes.
+- WebSocket/SSE real-time push
+- Tag search/filter within tree
+- FB type name column (requires `GetTypeInformation` browse per DB — explicitly out of scope per PROJECT.md)
 
 ### Architecture Approach
 
-The architecture is a four-layer pipeline: PLC -> C# driver (reads and caches to MongoDB) -> Node.js API (reads MongoDB only) -> Vue UI (fetches API, polls every 5 s). The key design decision is **on-demand browse via command queue** rather than startup pre-caching: the driver does not fetch type info at boot (which would delay alarm subscription), but instead responds to `commandsQueue` inserts with ASDU `"s7plus-browse-request"`. Results are persisted to `s7plusTypeInfoCache` and are instant on second access. The Vue `load-children` callback issues a POST to request type info, then polls `getS7PlusTypeInfo` every 500 ms (max 10 s, 20 retries) until `status === "ok"`.
+The architecture is an incremental enhancement to three existing files plus one new component file. The backend stays in the single `index.js` file by convention — the new `listS7PlusChildNodes` endpoint is ~35 lines following the inline pattern of the five existing S7Plus endpoints. No new folders, no new services, no driver changes. The write dialog is extracted as `PushValueDialog.vue` for readability and potential reuse. Non-datablock area rows are virtual rows appended client-side in `DatablockBrowserPage.vue` — no backend change is needed because the driver already stores area tags in `realtimeData` with deterministic `protocolSourceBrowsePath` values (e.g. `"MArea"`, `"QArea"`).
 
 **Major components:**
-1. `ConnectionThread` (Program.cs, MODIFIED) — writes `s7plusDatablocks` snapshot on each successful PLC connect
-2. `ProcessMongoCmd` (MongoCommands.cs, MODIFIED) — adds `s7plus-browse-request` ASDU branch; serializes PObject to `s7plusTypeInfoCache`
-3. Dedicated browse `S7CommPlusConnection` (NEW) — isolated third connection; never shared with tag or alarm PDU traffic
-4. Three new endpoints in `server_realtime_auth/index.js` (NEW): `listS7PlusDatablocks`, `getS7PlusTypeInfo`, `requestS7PlusTypeInfo`
-5. `DatablockBrowserPage.vue` (NEW) — flat list with connection selector and row-level Browse navigation
-6. `TagTreeBrowserPage.vue` (NEW) — lazy tree with dedup guards, live value polling, URL-param bootstrap
-7. `S7PlusAlarmsViewerPage.vue` (MODIFIED) — `originDbName` as `window.open` link
-
-See `.planning/research/ARCHITECTURE.md` for full system diagram, MongoDB schemas, data flow sequences, and build order.
+1. **`listS7PlusChildNodes` endpoint (NEW, ~35 lines in index.js)** — exact `protocolSourceBrowsePath` equality match + secondary `distinct` query for folder/leaf classification; add compound index at startup
+2. **`TagTreeBrowserPage.vue` (MODIFIED)** — removes `buildTree()` full-load; adds `load-children` lazy expand + `formatLeafValue()` + write button per leaf
+3. **`PushValueDialog.vue` (NEW)** — receives full leaf tag document, renders type-appropriate input (v-select for digital, v-text-field for analog), posts OPC WriteRequest to `/Invoke/`
+4. **`DatablockBrowserPage.vue` (MODIFIED)** — appends 5 static virtual area rows (IArea, QArea, MArea, S7Timers, S7Counters) after fetching real DB list
 
 ### Critical Pitfalls
 
-1. **PDU interleaving on shared S7CommPlusConnection** — Browse PDUs mixed with tag or alarm responses corrupt data or terminate the connection. Mitigation: open a dedicated third `S7CommPlusConnection` for all browse calls, following the `alarmConn` isolation pattern from v1.2. Must be decided before any browse endpoint is written.
+1. **`children: undefined` on folder nodes kills lazy loading** — Vuetify only shows an expand toggle and fires `load-children` when `children` is exactly `[]`. Set `children: []` on every non-leaf node; omit `children` only on confirmed leaf tags. Bugs here are invisible at depth-1 and only surface at depth-2+.
 
-2. **v-treeview infinite loop on duplicate node names** — Vuetify 3.7.0+ freezes the browser tab when a node and its parent share the same display name (confirmed Vuetify issue #20389; common TIA Portal pattern). Mitigation: always set `:item-value` to a unique key derived from RelId + parent path, never from the display name.
+2. **Reusing the existing regex-prefix query for the lazy endpoint defeats the purpose** — `listS7PlusTagsForDb` uses `$regex: '^dbName(\\.|$)'` which returns the entire subtree. Each expand would download the full DB. The new endpoint must use exact equality on `protocolSourceBrowsePath` (which is the parent path per `ExtractPathFromName()` in `TagMapping.cs`, not the node's own path).
 
-3. **`load-children` fires on node select, not only expand; race on rapid expand-collapse** — Both cause duplicate tree children. Mitigation: maintain a `loadedRelIds` Set and a `loadingRelIds` Set; gate all HTTP requests through both sets.
+3. **In-place array mutation is mandatory for `load-children`** — `rawItem.children = fetchedChildren` (reference replacement) breaks Vuetify's reactivity; children do not render. Must use `rawItem.children.push(...fetchedChildren)`.
 
-4. **JWT not available in new browser window** — Auth token in `sessionStorage` is not shared across tabs; `window.open` opens an unauthenticated tab that redirects to login and loses the `?db=` param. Mitigation: verify token is in `localStorage`; encode `db` param through the login redirect cycle.
+4. **Value write must go through `/Invoke/` OPC handler, not a custom endpoint** — The existing `case opc.ServiceCode.WriteRequest` at `index.js:754` enforces `canSendCommands`, creates SOE log entries, and updates `userActions`. A custom endpoint bypasses all of this silently.
 
-5. **Blocking browse calls hang Node.js event loop** — `getTypeInfoByRelId` is a synchronous PLC call (up to 5 s timeout). Node.js must never call it directly. Mitigation: all browse results flow through the MongoDB command-queue cache; Node.js reads cache only, never touches the PLC connection.
-
-See `.planning/research/PITFALLS.md` for all 14 pitfalls with phase-specific warning tables.
+5. **Non-datablock tags may have `protocolSourceBrowsePath = ""` in some driver versions** — The current driver names area tags `"MArea.X"` etc., yielding `protocolSourceBrowsePath = "MArea"`. But this must be verified with a direct MongoDB query on a live connection before Phase 5 is considered done.
 
 ---
 
 ## Implications for Roadmap
 
-Based on the dependency chain discovered in research, the natural structure is eight sequential steps grouped into four logical phases.
+All four features have clear implementation dependencies. The architecture research provides an explicit 6-step build order; the roadmap should reflect this sequence. Phases 4 and 5 are independent of each other and can be parallelized.
 
-### Phase 1: Driver — Datablock List Persistence
-**Rationale:** Every other feature depends on `s7plusDatablocks` existing in MongoDB. This is the mandatory foundation; nothing else can be built or tested without it.
-**Delivers:** `s7plusDatablocks` collection populated at driver startup with `db_name`, `db_number`, `db_block_relid`, `db_block_ti_relid`, `connectionNumber`; `ReplaceOneAsync` upsert keyed on `{connectionNumber, db_name}`.
-**Addresses:** P1 feature "s7plusDatablocks MongoDB collection"
-**Avoids:** Pitfall 2 (Node.js event loop block) — data pre-cached at driver startup, not at HTTP request time; Pitfall 13 (inline collection name) — define named constant before writing any collection access code
+### Phase 1: Backend Foundation — `listS7PlusChildNodes` Endpoint + Index
 
-### Phase 2: API — listS7PlusDatablocks Endpoint
-**Rationale:** Low-risk, pattern-match step (identical to `listS7PlusAlarms`). Enables end-to-end API verification before building the Vue layer.
-**Delivers:** `GET /Invoke/auth/listS7PlusDatablocks?connectionNumber=N` returning sorted datablock list; `[authJwt.isAdmin]` guard consistent with other S7Plus endpoints.
-**Addresses:** P1 feature "listS7PlusDatablocks API endpoint"
+**Rationale:** Every other v1.5 feature depends on the ability to fetch direct children of a path. This endpoint must exist and be verified against real data before any frontend work begins. The `protocolSourceBrowsePath` parent-path semantics must be confirmed with a direct MongoDB query before writing the query.
+**Delivers:** New auth-guarded endpoint returning direct child nodes with folder/leaf classification; compound index `{protocolSourceConnectionNumber, protocolSourceBrowsePath}` added idempotently at startup.
+**Addresses:** Lazy tree loading (backend half); non-datablock area browsability (area paths use the same endpoint with no special-casing).
+**Avoids:** Pitfall 2 (full-subtree regex query), Pitfall 3 (browse path semantics misunderstanding).
 
-### Phase 3: Vue — DatablockBrowserPage + Router
-**Rationale:** With the API available, the flat DatablockBrowser can be built and demo'd before tackling the more complex tree component. TagTreeBrowserPage starts as a stub showing only the `db` query param.
-**Delivers:** `DatablockBrowserPage.vue` (v-list + v-virtual-scroll, connection selector, client-side name filter), two new routes (`/s7plus-datablocks`, `/s7plus-tag-tree`), AdminUI nav entry, DashboardPage shortcut, TagTreeBrowserPage stub.
-**Uses:** `v-list` + `v-virtual-scroll` for flat list (avoids Pitfall 4 — v-treeview perf regression on large flat lists)
-**Addresses:** P1 features: DatablockBrowserPage, nav entry, Browse action; P2 feature: datablock name filter
+### Phase 2: Lazy Tree Loading — Rewrite `TagTreeBrowserPage.vue`
 
-### Phase 4: Driver — On-Demand Browse via Command Queue
-**Rationale:** The TagTreeBrowser's lazy expansion requires the driver to respond to browse commands and write type info to `s7plusTypeInfoCache`. This driver-side work must be complete before Vue expansion logic can be wired up. Can be developed in parallel with Phase 3 (no shared files).
-**Delivers:** Dedicated third `S7CommPlusConnection` for browse; `ProcessMongoCmd` ASDU branch for `s7plus-browse-request`; PObject serialization (varnames + vartypes + relIds) to `s7plusTypeInfoCache` with upsert.
-**Addresses:** P1 feature "Type-info browse backend (C# side)"
-**Avoids:** Pitfall 1 (PDU interleaving) — dedicated connection is the solution; Pitfall 12 (blocking thread) — wrap browse call in `Task.Run` with `CancellationToken`; Pitfall 7 (null PObject crash) — null-guard copied from Form1.cs line 136; Pitfall 14 (GetListOfDatablocks timeout) — document `timeoutMs` config for large PLCs
+**Rationale:** Replaces the v1.4 full-load / `buildTree()` pattern. Must be stable before adding value display fixes, write buttons, or area rows — all three depend on the lazy tree being the live rendering model.
+**Delivers:** `load-children` integrated into `v-treeview`; initial root-level load replaces full DB load; expand state preserved through value refresh cycles; scoped value refresh targeting only expanded leaves.
+**Addresses:** Table-stakes lazy loading and scoped refresh requirements.
+**Avoids:** Pitfall 1 (`children: []` vs `undefined`), Anti-Pattern 3 (in-place array mutation), Anti-Pattern 1 (full-load at open).
 
-### Phase 5: API — getS7PlusTypeInfo + requestS7PlusTypeInfo Endpoints
-**Rationale:** Thin endpoints over the now-populated `s7plusTypeInfoCache` and `commandsQueue`. Idempotency check prevents duplicate PLC requests.
-**Delivers:** `GET /Invoke/auth/getS7PlusTypeInfo?tiRelId=X`, `POST /Invoke/auth/requestS7PlusTypeInfo`; compound `{ protocolSourceObjectAddress: 1, protocolConnectionNumber: 1 }` index on `realtimeData` at startup.
-**Addresses:** P1 feature "Type-info browse backend (Node.js side)"
-**Avoids:** Pitfall 8 (realtimeData full collection scan) — compound index created in this phase
+### Phase 3: Boolean Value Display Fix
 
-### Phase 6: Vue — TagTreeBrowserPage Lazy Expand
-**Rationale:** With all backend infrastructure in place, the full tree component is built with correct deduplication guards from day one.
-**Delivers:** `TagTreeBrowserPage.vue` with `v-treeview`, `load-children` async handler, `loadedRelIds`/`loadingRelIds` dedup guards, unique `:item-value` keys (RelId + parent path), 1-dim array expansion, UDT child placeholders, 500 ms poll loop with 10 s timeout.
-**Addresses:** P1 features: TagTreeBrowserPage lazy expand, 1-dim array expansion
-**Avoids:** Pitfall 3 (load-children fires on select), Pitfall 5 (duplicate node name infinite loop), Pitfall 10 (rapid expand-collapse race)
+**Rationale:** Completely independent of lazy loading once the tree renders correctly. A one-line template change plus `formatLeafValue()` helper. Can be bundled with Phase 2 in the same PR or shipped immediately after as a standalone fix.
+**Delivers:** Digital tags display `TRUE`/`FALSE` matching the tabular view; analog and string tags unaffected.
+**Addresses:** Table-stakes boolean display requirement.
+**Avoids:** Pitfall 4 (raw `doc.value` display for digital tags).
 
-### Phase 7: Vue + API — Live Values Column
-**Rationale:** Self-contained addition to the tree page; depends on the tree rendering correctly first.
-**Delivers:** Batch `getRealtimeValues` endpoint (or reuse existing pattern); live value column in TagTreeBrowserPage showing `valueString` from `realtimeData` for leaf nodes; 5 s auto-refresh for visible leaf nodes; "—" for unconfigured tags.
-**Addresses:** P1 feature "Live value column"
-**Avoids:** Pitfall 5 variant — only query realtimeData for leaf nodes (hasRelation=false) that are currently expanded, not the entire tree
+### Phase 4: Value Write Dialog — `PushValueDialog.vue`
 
-### Phase 8: Integration — Alarms Viewer Link + Auth in New Window
-**Rationale:** End-to-end integration of the two milestone goals. Auth-in-new-window must be verified before wiring up `window.open`.
-**Delivers:** `originDbName` as clickable chip/link in S7PlusAlarmsViewerPage; `encodeURIComponent` on DB name; auth token storage in `localStorage` verified; `db` param preserved through any login redirect.
-**Addresses:** P1 feature "originDbName click opens TagTreeBrowser"
-**Avoids:** Pitfall 6 (JWT not in new tab), Pitfall 9 (navigation guard loses db param), Pitfall 11 (special chars in DB name URL)
+**Rationale:** Depends on Phase 2 being stable (write button is in the tree leaf append slot) and on `_id`, `type`, `stateTextTrue/False`, and `commandOfSupervised` being projected in the Phase 1 endpoint response.
+**Delivers:** New `PushValueDialog.vue` component; write button on leaf nodes where `commandOfSupervised != 0`; write action routed through existing `/Invoke/` OPC WriteRequest handler.
+**Addresses:** Differentiator write/push feature.
+**Avoids:** Pitfall 5 (bypassing OPC handler, losing auth/SOE/audit trail); anti-pattern of reusing `dlgcomando.html` legacy popup (incompatible with Vue SPA — `window.opener` is null).
+
+### Phase 5: Non-Datablock Tags — Virtual Area Rows in `DatablockBrowserPage.vue`
+
+**Rationale:** Independent of Phase 4. Depends only on Phase 1 (the lazy endpoint already handles `path=MArea` identically to `path=MyDB`). The DatablockBrowserPage change is client-side virtual rows — no new endpoint, no driver change.
+**Delivers:** 5 virtual area rows (IArea, QArea, MArea, S7Timers, S7Counters) in DatablockBrowser; each opens TagTreeBrowserPage with `?db=<AreaName>` identically to a DB row.
+**Addresses:** Differentiator non-datablock tag support.
+**Avoids:** Pitfall 6 (verify `protocolSourceBrowsePath` values in MongoDB for area tags before shipping).
 
 ### Phase Ordering Rationale
 
-- Phases 1-2 are strictly sequential (driver writes MongoDB -> API reads MongoDB -> Vue fetches API).
-- Phase 3 can deliver a working DatablockBrowser with a stub TagTreeBrowserPage, providing an early integration checkpoint and demo milestone.
-- Phase 4 (driver browse) can be developed in parallel with Phase 3 (Vue DatablockBrowser) — no file overlap.
-- Phases 5-6 are tightly coupled (API endpoint schema and Vue `load-children` tree node schema must agree with the MongoDB document structure defined in Phase 4).
-- Phase 7 (live values) is additive and can be treated as an optional sub-milestone if time is short.
-- Phase 8 (alarms integration) is last because it depends on TagTreeBrowserPage being fully functional.
+- Phase 1 first because it unblocks both the lazy tree (Phase 2) and the area rows (Phase 5).
+- Phase 2 before Phase 4 because the write button is embedded in the tree leaf slot.
+- Phase 3 can be done alongside Phase 2 (same file, independent change).
+- Phases 4 and 5 are independent of each other and can be parallelized once Phase 2 is merged.
+- The boolean fix (Phase 3) is the highest value-to-effort ratio change in the milestone — deliver it as early as possible.
 
 ### Research Flags
 
-Phases likely needing deeper research or a validation spike during planning:
+Phases with standard, well-documented patterns (no deeper research needed before planning):
+- **Phase 1 (backend endpoint):** Follows identical inline pattern to `listS7PlusTagsForDb`; exact query and index specified in ARCHITECTURE.md. Run a direct MongoDB query to verify `protocolSourceBrowsePath` semantics — this is a 2-minute verification, not a research task.
+- **Phase 3 (boolean display):** Single-function change. Pattern confirmed from `tabular.html` and `TagsCreation.cs`. No unknowns.
+- **Phase 4 (write dialog):** OPC WriteRequest wire format documented in STACK.md and ARCHITECTURE.md from direct `tabular.html` inspection. No unknowns.
 
-- **Phase 4 (Driver browse connection):** The dedicated third `S7CommPlusConnection` initialization sequence (connect timing, error recovery, reconnect behavior when tag/alarm connections are also reconnecting) should be validated against `AlarmThread.cs` as the reference implementation before coding begins. The pattern is architecturally clear but the exact C# lifecycle is not fully spelled out in research.
-- **Phase 7 (Live values address resolution):** Mapping tree node paths to `realtimeData.protocolSourceObjectAddress` strings requires the `escapeTiaString` path-composition logic from GUIBrowser Form1.cs lines 334-348 to match the address format the driver actually stores. This is a MEDIUM-confidence area — verify empirically against a real `realtimeData` document before writing the lookup logic.
-
-Phases with standard patterns (skip research-phase):
-- **Phase 1:** Direct extension of existing `GetListOfDatablocks` + `ReplaceOneAsync` pattern in Program.cs — HIGH confidence.
-- **Phase 2:** Pattern-match with `listS7PlusAlarms` — HIGH confidence.
-- **Phase 3:** Standard Vuetify v-list + Vue Router patterns — HIGH confidence.
-- **Phase 5:** Standard Express endpoint + `insertOne` into commandsQueue — HIGH confidence.
-- **Phase 8:** Vue Router `router.resolve()` + `window.open()` — HIGH confidence.
+Phases needing a targeted verification step before coding:
+- **Phase 2 (lazy tree):** After connecting `load-children` to the endpoint, run a depth-3 expansion smoke test immediately. Also test rapid expand-collapse-expand for duplicate children. The Vuetify behavior is confirmed from source, but these integration edge cases are worth catching before adding the write button in Phase 4.
+- **Phase 5 (non-datablock):** Before shipping, run `db.realtimeData.find({ protocolSourceBrowsePath: "MArea" })` on a live connection. If the field is `""` instead of `"MArea"`, the virtual rows will open to an empty tree (silent failure requiring a one-line driver fix).
 
 ---
 
@@ -169,53 +135,41 @@ Phases with standard patterns (skip research-phase):
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | All versions confirmed from installed node_modules and package.json; v-treeview availability verified against Vuetify issue history and official docs; router pattern confirmed from project source code |
-| Features | HIGH | Grounded in live codebase (GUIBrowser Form1.cs, S7CommPlusConnection.cs, server_realtime_auth/index.js); UX conventions validated against Ignition, OPC UA, and TIA Portal WinCC patterns |
-| Architecture | HIGH | Based on direct code inspection of all affected files; command-queue browse pattern verified against existing alarm ack implementation in MongoCommands.cs |
-| Pitfalls | HIGH | All 14 pitfalls grounded in codebase inspection and/or confirmed Vuetify GitHub issues with specific issue numbers and affected version ranges |
+| Stack | HIGH | All claims verified from installed `node_modules` source and project source files. No new packages. No speculation. |
+| Features | HIGH | All four features traced end-to-end from UI requirement to existing backend infrastructure. Dependencies confirmed from codebase. |
+| Architecture | HIGH | Component boundaries, data flow, query patterns, and build order all verified from direct source inspection. Exact query code provided in ARCHITECTURE.md. |
+| Pitfalls | HIGH | All 6 critical pitfalls grounded in direct codebase inspection and Vuetify issue tracker. Recovery strategies included for each. |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-- **`db_block_ti_relid` not in alarm documents:** Alarm documents store `dbNumber` and `originDbName`, not `db_block_ti_relid`. TagTreeBrowser opened from an alarm must call `listS7PlusDatablocks` on mount to resolve `ti_relid` by name match. This is a known, accepted design choice — implement explicitly in Phase 8.
+- **Non-datablock `protocolSourceBrowsePath` values need live verification:** ARCHITECTURE.md and STACK.md document that area tags use `protocolSourceBrowsePath = "MArea"` etc. based on the driver's naming convention in `S7CommPlusConnection.cs:878-880`. PITFALLS.md raises a counter-scenario where the field could be `""`. Verify with `db.realtimeData.find({ protocolSourceConnectionNumber: X, protocolSourceBrowsePath: "MArea" })` on a live PLC connection before completing Phase 5. If `""` is found, add a one-line driver fix to populate the path.
 
-- **Live value address format match:** `realtimeData.protocolSourceObjectAddress` may use AccessSequence hex strings (e.g. `8a0e0001.1.2.3`) rather than TIA Portal symbolic strings (e.g. `"AlarmData_DB".AlarmSlot[0].Active`). The exact format for already-configured tags must be confirmed against a real `realtimeData` document before Phase 7 implementation. The `escapeTiaString` logic in GUIBrowser Form1.cs is the reference candidate.
+- **`commandOfSupervised` presence on area tags:** The write dialog disables the write button when `commandOfSupervised == 0`. For area tags (MArea/QArea), it is unknown whether the driver creates paired command tags. If not, write buttons will not appear for area leaf tags. This is not a regression (no write existed before) but should be noted in the Phase 4 task so testers know what to expect.
 
-- **Browse connection reconnect lifecycle:** How the dedicated browse `S7CommPlusConnection` should behave during PLC reconnect events is not detailed in research. Validate the reconnect sequence against `AlarmThread.cs` before Phase 4 coding begins.
-
-- **Large array display cap:** 1-dim arrays with many elements (e.g. 500-element arrays of UDTs) could generate hundreds of child nodes in a single `load-children` call. A display cap (e.g. first 100 elements + "Show more") should be decided before Phase 6 implementation begins.
+- **`listS7PlusChildNodes` projection must include write-dialog fields:** The write dialog needs `_id`, `type`, `stateTextTrue`, `stateTextFalse`, `commandOfSupervised`, and `protocolSourceObjectAddress`. These must be confirmed in the Phase 1 endpoint projection spec — the write dialog cannot be built correctly without them.
 
 ---
 
 ## Sources
 
-### Primary (HIGH confidence — direct source code)
-- `S7CommPlusGUIBrowser/Form1.cs` — lazy browse, array handling, UDT recursion, SetImageKey() type mapping, null-guard (line 136)
-- `S7CommPlusDriver/S7CommPlusConnection.cs` — `DatablockInfo` struct, `GetListOfDatablocks`, `getTypeInfoByRelId`, PDU queue / mutex / timeout constants
-- `S7CommPlusClient/Program.cs` — ConnectionThread structure, existing `GetListOfDatablocks` call, collection name constants
-- `S7CommPlusClient/MongoCommands.cs` — ASDU dispatch pattern; alarm ack as template for browse command handler
-- `S7CommPlusClient/AlarmThread.cs` — `alarmConn` isolation pattern; dedicated connection reference
-- `S7CommPlusClient/Common.cs` — `S7CP_connection.timeoutMs` default 5000 ms
-- `server_realtime_auth/index.js` — existing S7Plus alarm endpoints; `authJwt.isAdmin` guard; commandsQueue pattern; `createIndex` idempotent pattern (Phase 10)
-- `AdminUI/src/router/index.js` — `createWebHashHistory` confirmed; existing route registration pattern
-- `AdminUI/src/components/S7PlusAlarmsViewerPage.vue` — existing viewer structure, filter patterns, auto-refresh
-- `AdminUI/src/components/DashboardPage.vue` — shortcut card pattern
-- `AdminUI/package.json` — Vuetify `"3.10"`, Vue `^3.4.31`, vue-router `^4.4.0` confirmed
-- `.planning/PROJECT.md` — v1.4 target features, KEY DECISIONS, constraints, validated history
+### Primary (HIGH confidence — direct codebase inspection)
+- `node_modules/vuetify/lib/components/VTreeview/VTreeviewChildren.js:15,60-64` — `load-children` trigger condition (fires when `children.length === 0`)
+- `node_modules/vuetify/lib/components/VTreeview/VTreeview.d.ts:449-451` — `loadChildren: (item: unknown) => Promise<void>` type signature
+- `json-scada/src/S7CommPlusClient/TagsCreation.cs:206-208, 279` — `stateTextTrue/False = "TRUE"/"FALSE"` for digital; `protocolSourceBrowsePath` assignment
+- `json-scada/src/S7CommPlusClient/TagMapping.cs:135` — `ExtractPathFromName()` confirming `protocolSourceBrowsePath` = parent path (strips last dot-segment)
+- `json-scada/src/S7CommPlusDriver/src/S7CommPlusDriver/S7CommPlusConnection.cs:878-882` — area node names: IArea, QArea, MArea, S7Timers, S7Counters
+- `json-scada/src/AdminUI/public/tabular.html:875-960` — OPC WriteRequest wire format (ServiceId 676); digital value conversion
+- `json-scada/src/server_realtime_auth/index.js:488-513, 754, 1143-1402` — existing endpoint patterns; WriteRequest handler; `canSendCommands` enforcement
+- `json-scada/src/AdminUI/src/components/TagTreeBrowserPage.vue` — v1.4 baseline: `buildTree()`, `patchLeafValues()`, `touchExpandedLeafTags()`
+- `json-scada/src/S7CommPlusClient/MongoCommands.cs` — `commandsQueue` document structure; change stream write execution path
 
-### Secondary (MEDIUM confidence)
-- Vuetify official docs (vuetifyjs.com) — `v-treeview` component, `load-children` prop async behavior
-- Vue Router official docs (router.vuejs.org) — `router.resolve()` API
-- Vuetify GitHub issues #19919, #20389, #21387, #5543, #8791, #20450 — confirmed bugs with affected version ranges
-- Ignition Tag Browser documentation — filter, live value, data type column UX conventions
-- OPC UA address space browser patterns (UaExpert) — lazy expand, node caching, expand-on-click conventions
-
-### Tertiary (LOW confidence — needs validation)
-- devicewise.com Siemens S7 driver docs — `GetListOfDatablocks` timeout recommendation for PLCs with >300 datablocks
-- Pinia cross-tab isolation community docs — `localStorage` vs `sessionStorage` partitioning (verify against AdminUI auth store implementation)
+### Secondary (MEDIUM confidence — Vuetify issue tracker)
+- [Vuetify GitHub #20450](https://github.com/vuetifyjs/vuetify/issues/20450) — `load-children` regression in 3.7.1; resolved; does not affect 3.10
+- [Vuetify GitHub #19983](https://github.com/vuetifyjs/vuetify/issues/19983) — empty `children` array shows expand arrow; confirms `[]` vs `undefined` contract
+- [Vuetify GitHub #10175](https://github.com/vuetifyjs/vuetify/issues/10175) — `load-children` fires only once per empty array state; re-triggers only if array is cleared
 
 ---
-
-*Research completed: 2026-03-26*
+*Research completed: 2026-03-30*
 *Ready for roadmap: yes*
