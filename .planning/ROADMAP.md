@@ -73,7 +73,7 @@ Full details: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 #### Phases
 
 - [x] **Phase 16: Backend — `listS7PlusChildNodes` Endpoint + Index** — New auth-guarded endpoint returning direct children of a path; compound index for fast child queries (completed 2026-03-30)
-- [ ] **Phase 17: Lazy Tree Loading + Boolean Display** — Rewrite TagTreeBrowserPage.vue around Vuetify `load-children`; scope value refresh to expanded leaves; show TRUE/FALSE for digital tags
+- [x] **Phase 17: Lazy Tree Loading + Boolean Display** — Rewrite TagTreeBrowserPage.vue around Vuetify `load-children`; scope value refresh to expanded leaves; show TRUE/FALSE for digital tags (completed 2026-03-30)
 - [ ] **Phase 18: Value Write Dialog** — New `PushValueDialog.vue` component; write button on leaf nodes; routes through existing OPC WriteRequest handler
 - [ ] **Phase 19: Non-Datablock Tags** — Append virtual area rows (IArea, QArea, MArea, S7Timers, S7Counters) to DatablockBrowserPage; browsable via existing lazy endpoint
 
@@ -103,9 +103,9 @@ Plans:
   3. The 5-second value refresh calls `touchS7PlusActiveTagRequests` only for tags whose tree nodes are currently expanded and visible, not all tags in the DB
   4. Leaf tags with `protocolSourceDataType` of boolean/digital display `TRUE` or `FALSE` in the value column; non-digital tags are unaffected
   5. Deeply nested datablocks (3+ levels, e.g. UDT structs) expand correctly at every level — no silently unreachable nodes
-**Plans:** 0/1 plans complete
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 17-01-PLAN.md — Rewrite TagTreeBrowserPage.vue with load-children, scoped refresh, and formatLeafValue
+- [x] 17-01-PLAN.md — Rewrite TagTreeBrowserPage.vue with load-children, scoped refresh, and formatLeafValue
 
 ### Phase 18: Value Write Dialog
 **Goal**: Operators can push a new value to any writable PLC tag directly from a TagTreeBrowser leaf node via a write dialog that routes through the existing OPC WriteRequest infrastructure
@@ -154,6 +154,6 @@ Plans:
 | 14. DatablockBrowser | v1.4 | 1/1 | Complete | 2026-03-26 |
 | 15. TagTreeBrowser & Integration | v1.4 | 1/1 | Complete | 2026-03-27 |
 | 16. Backend — listS7PlusChildNodes Endpoint + Index | v1.5 | 1/1 | Complete    | 2026-03-30 |
-| 17. Lazy Tree Loading + Boolean Display | v1.5 | 0/1 | Not started | — |
+| 17. Lazy Tree Loading + Boolean Display | v1.5 | 1/1 | Complete   | 2026-03-30 |
 | 18. Value Write Dialog | v1.5 | 0/1 | Not started | — |
 | 19. Non-Datablock Tags | v1.5 | 0/1 | Not started | — |
