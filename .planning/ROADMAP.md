@@ -117,9 +117,9 @@ Plans:
   3. The dialog renders a `v-select` (TRUE/FALSE) for digital tags and a `v-text-field` for analog/string tags
   4. Submitting the dialog posts an OPC WriteRequest (ServiceId 676) to `/Invoke/` — the existing handler enforces `canSendCommands`, creates a SOE log entry, and records to `userActions`
   5. A successful write closes the dialog and shows a brief confirmation; a failed write shows the error message without closing
-**Plans:** 0/1 plans complete
+**Plans:**  1/1 plans
 Plans:
-- [ ] 18-01-PLAN.md — Create PushValueDialog.vue and wire write button to leaf nodes in TagTreeBrowserPage.vue
+- [x] 18-01-PLAN.md — Create PushValueDialog.vue and wire write button to leaf nodes in TagTreeBrowserPage.vue
 
 ### Phase 19: Non-Datablock Tags
 **Goal**: MArea, QArea, IArea, S7Timers, and S7Counters appear as browsable entries alongside datablocks in DatablockBrowserPage, openable in TagTreeBrowserPage via the same lazy-expand mechanism
