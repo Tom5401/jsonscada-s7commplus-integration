@@ -4,19 +4,20 @@
 
 A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus alarm subscriptions into json-scada with full alarm management capability. The driver (S7CommPlusClient) connects to Siemens S7-1200/S7-1500 PLCs using the reverse-engineered S7CommPlus protocol, subscribes to alarm events, writes alarm state, text, timestamps, acknowledgement status, origin DB name, and associated data values into a dedicated MongoDB collection, and sends acknowledgement commands back to the PLC. A dedicated S7Plus Alarms Viewer in AdminUI provides operators with a TIA Portal-equivalent interface including origin columns and alarm history deletion.
 
-**Shipped:** v1.4 — Tag Tree Browser milestone complete 2026-03-27. Full operator workflow: alarms → origin DB name → tag tree with live values.
-**Phase 17 complete (2026-03-30):** TagTreeBrowserPage rewritten with lazy load-children (one level per expand via listS7PlusChildNodes), scoped value refresh (only expanded paths), and TRUE/FALSE boolean display.
-**Phase 18 complete (2026-03-30):** PushValueDialog.vue added to TagTreeBrowser — operators can push new values to writable PLC tags directly from the tag tree; Modify button shows only on writable leaves (commandOfSupervised != 0); OPC WriteRequest (ServiceId 671) POSTed to /Invoke/; digital tags use TRUE/FALSE select, analog/string use text field; command stub tags deduplicated from tree view.
+**Shipped:** v1.5 — TagTreeBrowser Overhaul milestone complete 2026-03-30. Operators now have a production-ready tree workflow: lazy expand per level, scoped live refresh, TRUE/FALSE digital values, in-tree value write dialog, and non-datablock memory area browsing.
 
-## Current Milestone: v1.5 TagTreeBrowser Overhaul
+## Current State (v1.5 Shipped)
 
-**Goal:** Transform TagTreeBrowser from a proof-of-concept into a production-ready tool that handles 100k+ tag databases with lazy loading at every tree level, real value display, value writing, and non-datablock tag support.
+- Milestones v1.0–v1.5 shipped
+- TagTreeBrowser handles large hierarchies via direct-child backend queries and client-side lazy expansion
+- Write workflows are available directly from writable leaf tags in TagTreeBrowser
+- DatablockBrowser includes Memory Areas (IArea, QArea, MArea, S7Timers, S7Counters) linking into the same browser flow
 
-**Target features:**
-- Lazy loading at every tree level — new backend endpoint returning direct children per path; Vuetify load-children; value refresh scoped to visible/expanded leaves
-- Real value display (TRUE/FALSE instead of 0/1) — matching tabular view behavior
-- Write/push values — open existing tabular view push-value window from TagTreeBrowser leaf nodes
-- Non-datablock tags (MArea, QArea) — surfaced alongside datablocks in DatablockBrowser
+## Next Milestone Goals (Draft)
+
+- Define v1.6 requirements and roadmap from deferred backlog (`WRITE-03`, `WRITE-04`, `BROWSE-01`, `BROWSE-02`, `BROWSE-03`)
+- Prioritize either operator feedback loop for writes or in-tree search as the next user-facing improvement
+- Keep lazy-loading architecture and scoped refresh behavior as non-regression constraints
 
 ## Shipped: v1.4 Tag Tree Browser (2026-03-27)
 
@@ -93,13 +94,14 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ Lazy loading at every tree level — `listS7PlusChildNodes` endpoint, Vuetify `:load-children` callback, `onLoadChildren` fetches one level per expand, Vuetify caches children after first open — Validated in Phase 17: lazy-tree-loading-boolean-display
 - ✓ Real value display: digital tags (type=`"digital"`) show `TRUE`/`FALSE` via `formatLeafValue()` instead of 0/1 — Validated in Phase 17: lazy-tree-loading-boolean-display
 - ✓ Value refresh scoped to expanded nodes only — `getExpandedParentPaths()` + `Promise.all` parallel `listS7PlusChildNodes` calls; only visible nodes refreshed — Validated in Phase 17: lazy-tree-loading-boolean-display
+- ✓ Write/push values from TagTreeBrowser leaf nodes via PushValueDialog and OPC WriteRequest workflow — Validated in Phase 18: value-write-dialog
+- ✓ Non-datablock tags (MArea, QArea, IArea, S7Timers, S7Counters) surfaced in DatablockBrowser and browseable via TagTreeBrowser — Validated in Phase 19: non-datablock-tags
 
 ### Active
 
-<!-- Current scope — v1.5 TagTreeBrowser Overhaul (phases 18–19) -->
-
-- ✓ Write/push values from TagTreeBrowser leaf nodes — PushValueDialog.vue with OPC WriteRequest, Modify button on writable leaves only, digital/analog branching, inline success/error feedback, auto-close — Validated in Phase 18: value-write-dialog
-- [ ] Non-datablock tags (MArea, QArea) alongside datablocks in DatablockBrowser
+- [ ] Define v1.6 milestone scope and requirements
+- [ ] Evaluate write acknowledgement feedback (WRITE-03)
+- [ ] Evaluate in-tree search/filter (BROWSE-01)
 
 ### Out of Scope
 
@@ -114,8 +116,8 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 ## Context
 
-**Current state (v1.4 shipped 2026-03-27):**
-- 15 phases complete across 5 milestones (v1.0–v1.4)
+**Current state (v1.5 shipped 2026-03-30):**
+- 19 phases complete across 6 milestones (v1.0–v1.5)
 - Full operator workflow: subscribe alarms → display with metadata → ack/delete → click origin DB → browse tag tree with live values
 - TagTreeBrowserPage.vue: hierarchical tree from `ungroupedDescription` full path; structured datablocks with nested UDT structs render as folder/leaf hierarchy; 5s in-place value refresh preserving expand state; touch-on-expand to extend TTL
 - DatablockBrowserPage.vue: connection dropdown, datablock table, "Browse Tags" button
@@ -163,7 +165,8 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 | SendAlarmAck routed through alarmConn | Avoids polling contention; AckJob completion notification arrives naturally on alarm subscription connection | ✓ Good — no contention issues |
 | AckJob completion notification (ClassId=3636) skipped in AlarmThread | P2ReturnValue=0x81 handled correctly but PObject attributes are AckJob-specific; skipping avoids KeyNotFoundException in AlarmsDai | ✓ Good — correct fix |
 | PendingAcks ConcurrentQueue for ack dispatch | AlarmThread dequeues and sends ack; MongoCommands awaits TaskCompletionSource; no dedicated third connection | ✓ Good — clean architecture |
-| dbNumber = `relationId & 0xFFFF` (lower 16 bits) | Confirmed by S7CommPlusConnection.cs:1247 — `area = relid >> 16`, `num = relid & 0xffff`; ORIGIN-02 formula in REQUIREMENTS.md was wrong (`>> 16`) | ✓ Good — correct extraction confirmed |
+| dbNumber = `relationId & 0xFFFF` (lower 16 bits) | Confirmed by S7CommPlusConnection.cs:1247 — `area = relid >> 16`, 
+um = relid & 0xffff`; ORIGIN-02 formula in REQUIREMENTS.md was wrong (`>> 16`) | ✓ Good — correct extraction confirmed |
 | Browse on tag connection (srv.connection) before alarm thread start | alarmConn does not exist yet at this point; browse is a one-time startup operation | ✓ Good — no ordering issue |
 | Empty-string fallback for originDbName (not null) | Consistent schema for API consumers; `""` signals unknown DB without requiring null checks | ✓ Good — clean consumer contract |
 | HTTP 204 No Content on delete success | Standard REST pattern for delete; no body needed | ✓ Good — Phase 8 ignores response body |
@@ -190,5 +193,5 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-30 — Milestone v1.5 TagTreeBrowser Overhaul started*
+*Last updated: 2026-03-30 — Milestone v1.5 TagTreeBrowser Overhaul shipped*
 
