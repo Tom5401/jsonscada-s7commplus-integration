@@ -75,7 +75,7 @@ Full details: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 - [x] **Phase 16: Backend — `listS7PlusChildNodes` Endpoint + Index** — New auth-guarded endpoint returning direct children of a path; compound index for fast child queries (completed 2026-03-30)
 - [x] **Phase 17: Lazy Tree Loading + Boolean Display** — Rewrite TagTreeBrowserPage.vue around Vuetify `load-children`; scope value refresh to expanded leaves; show TRUE/FALSE for digital tags (completed 2026-03-30)
 - [x] **Phase 18: Value Write Dialog** — New `PushValueDialog.vue` component; write button on leaf nodes; routes through existing OPC WriteRequest handler (completed 2026-03-30)
-- [ ] **Phase 19: Non-Datablock Tags** — Append virtual area rows (IArea, QArea, MArea, S7Timers, S7Counters) to DatablockBrowserPage; browsable via existing lazy endpoint
+- [x] **Phase 19: Non-Datablock Tags** — Append virtual area rows (IArea, QArea, MArea, S7Timers, S7Counters) to DatablockBrowserPage; browsable via existing lazy endpoint (completed 2026-03-30)
 
 ## Phase Details
 
@@ -130,9 +130,9 @@ Plans:
   2. Clicking "Browse Tags" on a virtual area row opens TagTreeBrowserPage in a new tab with `?db=<areaName>&connectionNumber=<N>`
   3. TagTreeBrowserPage successfully lazy-loads the root children for an area path using the same `listS7PlusChildNodes` endpoint (no area-specific code path required)
   4. If an area has no tags in `realtimeData` for this connection, the tree renders empty (no crash, no infinite spinner)
-**Plans:** 0/1 plans complete
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 19-01-PLAN.md — Add virtual area rows to DatablockBrowserPage.vue
+- [x] 19-01-PLAN.md — Add virtual area rows to DatablockBrowserPage.vue
 
 ## Progress
 
@@ -156,4 +156,4 @@ Plans:
 | 16. Backend — listS7PlusChildNodes Endpoint + Index | v1.5 | 1/1 | Complete    | 2026-03-30 |
 | 17. Lazy Tree Loading + Boolean Display | v1.5 | 1/1 | Complete    | 2026-03-30 |
 | 18. Value Write Dialog | v1.5 | 1/1 | Complete    | 2026-03-30 |
-| 19. Non-Datablock Tags | v1.5 | 0/1 | Not started | — |
+| 19. Non-Datablock Tags | v1.5 | 1/1 | Complete   | 2026-03-30 |
