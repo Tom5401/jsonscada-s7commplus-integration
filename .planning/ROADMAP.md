@@ -74,7 +74,7 @@ Full details: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 
 - [x] **Phase 16: Backend — `listS7PlusChildNodes` Endpoint + Index** — New auth-guarded endpoint returning direct children of a path; compound index for fast child queries (completed 2026-03-30)
 - [x] **Phase 17: Lazy Tree Loading + Boolean Display** — Rewrite TagTreeBrowserPage.vue around Vuetify `load-children`; scope value refresh to expanded leaves; show TRUE/FALSE for digital tags (completed 2026-03-30)
-- [ ] **Phase 18: Value Write Dialog** — New `PushValueDialog.vue` component; write button on leaf nodes; routes through existing OPC WriteRequest handler
+- [x] **Phase 18: Value Write Dialog** — New `PushValueDialog.vue` component; write button on leaf nodes; routes through existing OPC WriteRequest handler (completed 2026-03-30)
 - [ ] **Phase 19: Non-Datablock Tags** — Append virtual area rows (IArea, QArea, MArea, S7Timers, S7Counters) to DatablockBrowserPage; browsable via existing lazy endpoint
 
 ## Phase Details
@@ -117,7 +117,7 @@ Plans:
   3. The dialog renders a `v-select` (TRUE/FALSE) for digital tags and a `v-text-field` for analog/string tags
   4. Submitting the dialog posts an OPC WriteRequest (ServiceId 676) to `/Invoke/` — the existing handler enforces `canSendCommands`, creates a SOE log entry, and records to `userActions`
   5. A successful write closes the dialog and shows a brief confirmation; a failed write shows the error message without closing
-**Plans:**  1/1 plans
+**Plans:**  1/1 plans complete
 Plans:
 - [x] 18-01-PLAN.md — Create PushValueDialog.vue and wire write button to leaf nodes in TagTreeBrowserPage.vue
 
@@ -155,5 +155,5 @@ Plans:
 | 15. TagTreeBrowser & Integration | v1.4 | 1/1 | Complete | 2026-03-27 |
 | 16. Backend — listS7PlusChildNodes Endpoint + Index | v1.5 | 1/1 | Complete    | 2026-03-30 |
 | 17. Lazy Tree Loading + Boolean Display | v1.5 | 1/1 | Complete    | 2026-03-30 |
-| 18. Value Write Dialog | v1.5 | 0/1 | Not started | — |
+| 18. Value Write Dialog | v1.5 | 1/1 | Complete   | 2026-03-30 |
 | 19. Non-Datablock Tags | v1.5 | 0/1 | Not started | — |
