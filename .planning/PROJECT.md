@@ -1,10 +1,11 @@
-# S7CommPlus Alarm Subscriptions for json-scada
+﻿# S7CommPlus Alarm Subscriptions for json-scada
 
 ## What This Is
 
 A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus alarm subscriptions into json-scada with full alarm management capability. The driver (S7CommPlusClient) connects to Siemens S7-1200/S7-1500 PLCs using the reverse-engineered S7CommPlus protocol, subscribes to alarm events, writes alarm state, text, timestamps, acknowledgement status, origin DB name, and associated data values into a dedicated MongoDB collection, and sends acknowledgement commands back to the PLC. A dedicated S7Plus Alarms Viewer in AdminUI provides operators with a TIA Portal-equivalent interface including origin columns and alarm history deletion.
 
 **Shipped:** v1.4 — Tag Tree Browser milestone complete 2026-03-27. Full operator workflow: alarms → origin DB name → tag tree with live values.
+**Phase 17 complete (2026-03-30):** TagTreeBrowserPage rewritten with lazy load-children (one level per expand via listS7PlusChildNodes), scoped value refresh (only expanded paths), and TRUE/FALSE boolean display.
 
 ## Current Milestone: v1.5 TagTreeBrowser Overhaul
 
@@ -86,12 +87,16 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ `TagTreeBrowserPage.vue` at `/s7plus-tag-tree` — hierarchical tree from `ungroupedDescription` full path, 5s in-place value refresh, touch-on-expand, auto-expand first level; structured datablocks (nested UDT structs) render folder/leaf hierarchy correctly — Validated in Phase 15: tagtreebrowser-integration
 - ✓ `originDbName` cells in S7PlusAlarmsViewerPage render as clickable links (non-empty) opening TagTreeBrowser in new tab with `db=` and `connectionNumber=` params — Validated in Phase 15: tagtreebrowser-integration
 
+### Validated (v1.5)
+
+- ✓ Lazy loading at every tree level — `listS7PlusChildNodes` endpoint, Vuetify `:load-children` callback, `onLoadChildren` fetches one level per expand, Vuetify caches children after first open — Validated in Phase 17: lazy-tree-loading-boolean-display
+- ✓ Real value display: digital tags (type=`"digital"`) show `TRUE`/`FALSE` via `formatLeafValue()` instead of 0/1 — Validated in Phase 17: lazy-tree-loading-boolean-display
+- ✓ Value refresh scoped to expanded nodes only — `getExpandedParentPaths()` + `Promise.all` parallel `listS7PlusChildNodes` calls; only visible nodes refreshed — Validated in Phase 17: lazy-tree-loading-boolean-display
+
 ### Active
 
-<!-- Current scope — v1.5 TagTreeBrowser Overhaul -->
+<!-- Current scope — v1.5 TagTreeBrowser Overhaul (phases 18–19) -->
 
-- [ ] Lazy loading at every tree level — backend endpoint for direct children, Vuetify load-children, scoped value refresh
-- [ ] Real value display (TRUE/FALSE vs 0/1) matching tabular view
 - [ ] Write/push values from TagTreeBrowser leaf nodes (reuse tabular view push-value window)
 - [ ] Non-datablock tags (MArea, QArea) alongside datablocks in DatablockBrowser
 
@@ -185,3 +190,4 @@ This document evolves at phase transitions and milestone boundaries.
 
 ---
 *Last updated: 2026-03-30 — Milestone v1.5 TagTreeBrowser Overhaul started*
+
