@@ -72,7 +72,7 @@ Full details: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 
 #### Phases
 
-- [ ] **Phase 16: Backend — `listS7PlusChildNodes` Endpoint + Index** — New auth-guarded endpoint returning direct children of a path; compound index for fast child queries
+- [x] **Phase 16: Backend — `listS7PlusChildNodes` Endpoint + Index** — New auth-guarded endpoint returning direct children of a path; compound index for fast child queries (completed 2026-03-30)
 - [ ] **Phase 17: Lazy Tree Loading + Boolean Display** — Rewrite TagTreeBrowserPage.vue around Vuetify `load-children`; scope value refresh to expanded leaves; show TRUE/FALSE for digital tags
 - [ ] **Phase 18: Value Write Dialog** — New `PushValueDialog.vue` component; write button on leaf nodes; routes through existing OPC WriteRequest handler
 - [ ] **Phase 19: Non-Datablock Tags** — Append virtual area rows (IArea, QArea, MArea, S7Timers, S7Counters) to DatablockBrowserPage; browsable via existing lazy endpoint
@@ -89,9 +89,9 @@ Full details: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   3. A compound index `{protocolSourceConnectionNumber: 1, protocolSourceBrowsePath: 1}` is created on `realtimeData` at server startup idempotently (no crash on duplicate)
   4. The endpoint rejects unauthenticated requests consistent with the existing `[authJwt.isAdmin]` guard pattern
   5. A direct MongoDB query on a live connection confirms that area tags (MArea, QArea) have `protocolSourceBrowsePath` values matching the pattern the endpoint will query
-**Plans:** 0/1 plans complete
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 16-01-PLAN.md — Add listS7PlusChildNodes endpoint and compound index to index.js
+- [x] 16-01-PLAN.md — Add listS7PlusChildNodes endpoint and compound index to index.js
 
 ### Phase 17: Lazy Tree Loading + Boolean Display
 **Goal**: TagTreeBrowserPage loads the root level on open and fetches one additional level per expand via Vuetify `load-children`, scopes the 5-second value refresh to only currently-expanded leaf tags, and displays digital tags as TRUE/FALSE instead of 0/1
@@ -153,7 +153,7 @@ Plans:
 | 13. Backend API — Datablocks & Tag Endpoints | v1.4 | 1/1 | Complete | 2026-03-26 |
 | 14. DatablockBrowser | v1.4 | 1/1 | Complete | 2026-03-26 |
 | 15. TagTreeBrowser & Integration | v1.4 | 1/1 | Complete | 2026-03-27 |
-| 16. Backend — listS7PlusChildNodes Endpoint + Index | v1.5 | 0/1 | Not started | — |
+| 16. Backend — listS7PlusChildNodes Endpoint + Index | v1.5 | 1/1 | Complete   | 2026-03-30 |
 | 17. Lazy Tree Loading + Boolean Display | v1.5 | 0/1 | Not started | — |
 | 18. Value Write Dialog | v1.5 | 0/1 | Not started | — |
 | 19. Non-Datablock Tags | v1.5 | 0/1 | Not started | — |
