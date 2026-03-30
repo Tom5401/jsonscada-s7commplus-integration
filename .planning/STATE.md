@@ -93,6 +93,7 @@ None Ã¢â‚¬â€ milestone v1.3 complete.
 |---|-------------|------|--------|-----------|
 | 260324-i0m | S7Plus Alarms Viewer source column show protocolConnection name instead of number | 2026-03-24 | d387b306 | [260324-i0m-s7plus-alarms-viewer-source-column-show-](./quick/260324-i0m-s7plus-alarms-viewer-source-column-show-/) |
 | 260324-l5d | S7Plus alarm MongoDB entries include sourceId and connectionName fields, viewer reads connectionName from alarm document | 2026-03-24 | e6a43a13 | [260324-l5d-s7plus-alarm-mongodb-entries-include-sou](./quick/260324-l5d-s7plus-alarm-mongodb-entries-include-sou/) |
+| 260330-m1y | Add row dividers and column headers to TagTreeBrowserPage leaf rows | 2026-03-30 | 24c256d8 | [260330-m1y-add-row-dividers-and-column-headers-to-t](./quick/260330-m1y-add-row-dividers-and-column-headers-to-t/) |
 
 ## Session Continuity
 
