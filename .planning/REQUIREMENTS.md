@@ -56,19 +56,19 @@ Deferred to future release. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERF-01 | — | Pending |
-| PERF-02 | — | Pending |
-| PERF-03 | — | Pending |
-| PERF-04 | — | Pending |
-| DISP-01 | — | Pending |
-| WRITE-01 | — | Pending |
-| WRITE-02 | — | Pending |
-| AREA-01 | — | Pending |
+| PERF-01 | 16 | Pending |
+| PERF-02 | 16 | Pending |
+| PERF-03 | 17 | Pending |
+| PERF-04 | 17 | Pending |
+| DISP-01 | 17 | Pending |
+| WRITE-01 | 18 | Pending |
+| WRITE-02 | 18 | Pending |
+| AREA-01 | 19 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 8 total
-- Mapped to phases: 0
-- Unmapped: 8
+- Mapped to phases: 8
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
