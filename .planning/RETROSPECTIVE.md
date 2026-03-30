@@ -1,4 +1,4 @@
-# Retrospective
+﻿# Retrospective
 
 ## Milestone: v1.0 — S7CommPlus Alarm Subscriptions PoC
 
@@ -193,3 +193,44 @@
 | v1.2 Origin & Cleanup | 4 | 4 | 0 (no live UAT) | 1 (Phase 4 branch recovery — cherry-pick of 3 ack commits) |
 | v1.3 Alarm Viewer Enhancements | 3 | 4 | 0 (human checkpoints approved first pass) | 0 |
 | v1.4 Tag Tree Browser | 4 | 4 | 1 (structured datablocks empty) | 1 (ungroupedDescription fix) |
+
+---
+
+## Milestone: v1.5 — TagTreeBrowser Overhaul
+
+**Shipped:** 2026-03-30
+**Phases:** 4 (16-19) | **Plans:** 4 | **Duration:** 1 day
+
+### What Was Built
+
+- Lazy-loading S7+ TagTree browser (Phase 16): replaced flat full-load with Vuetify load-children; direct-child endpoint filters by exact parent prefix rather than prefix/regex to scale to deep tag hierarchies
+- Scoped connection refresh (Phase 17): `getExpandedParentPaths()` re-expands only previously-opened nodes; full collapse-and-reload removed in favor of delta refresh
+- Write support (Phase 18): writable-leaf gating via `commandOfSupervised !== 0`; tag-write panel with value input and confirmation; scoped refresh after write confirms round-trip
+- Virtual Memory Area rows (Phase 19): IArea, QArea, MArea, S7Timers, S7Counters injected as virtual rows in DatablockBrowser with a "Memory Areas" divider — no backend changes required
+
+### What Worked
+
+- **Virtual rows over backend changes** — adding Memory Area rows as client-side constants avoided a backend endpoint change and kept the feature entirely UI-scoped
+- **Direct-child equality filter** — filtering children by `parent === path` (not `startsWith`) avoided O(n) deep-tree scanning and correctly handles paths that are prefixes of sibling paths
+- **load-children as lazy mechanism** — Vuetify's `load-children` callback caches after first open; by trusting that cache we avoided double-fetching and got correct behavior for free
+- **Single phase per concern** — keeping each capability (lazy load, refresh, write, memory areas) in its own phase meant each plan was independently verifiable and the diff was always small
+- **Phase 19 scope decision** — initially the phase targeted non-datablock tag browsing; pivoting to virtual rows (simpler, no backend) was the right call given the PoC scope
+
+### What Was Inefficient
+
+- **PowerShell encoding round-trips** — multiple planning docs got mojibake (em-dashes, checkmarks) from UTF-8 round-trips through the Windows console. Future sessions should prefer direct file writes via `create_file` tool or `[System.IO.File]::WriteAllText()` with explicit `[System.Text.Encoding]::UTF8` (no BOM) rather than `Set-Content`
+- **REQUIREMENTS.md checkboxes not maintained** — 7 of 8 requirements stayed `[ ]` until milestone close. Requirements should be checked off in each phase SUMMARY commit
+- **Retrospective and final commit deferred to next session** — the complete-milestone workflow did not finish in the same conversation due to context reset. Scope the milestone-close work to do retrospective + final commit before handing off
+
+### Patterns Established
+
+- `load-children` + `items` array mutation is the correct Vuetify 3 lazy-tree pattern; do not use `v-treeview` `open` event
+- Memory Area virtual rows pattern: inject `{ _isDivider: true }` sentinels + named rows as prepended array before real rows; use `#item` slot to branch rendering
+- Writable-leaf guard: `item.commandOfSupervised !== 0` is the json-scada convention for write-enabled tags
+- `getExpandedParentPaths()` + selective re-expand is the correct scoped refresh pattern; avoid full tree collapse
+
+### Key Links
+
+- DatablockBrowserPage.vue — virtual rows: `VIRTUAL_AREA_ROWS`, `MEMORY_AREA_DIVIDER`, `watch(selectedConnection)` prepend logic
+- S7TagTreeBrowserPage.vue — lazy loading: `load-children` callback, `directChildrenOf` endpoint, scoped refresh
+- `src/controllers/TagTreeController.cs` — `directChildrenOf` action: `Eq(parent, parentPath)` filter
