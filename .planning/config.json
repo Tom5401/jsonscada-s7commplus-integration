@@ -1,14 +1,26 @@
-{
-  "mode": "interactive",
-  "granularity": "coarse",
-  "parallelization": true,
-  "commit_docs": true,
-  "model_profile": "balanced",
-  "workflow": {
-    "research": true,
-    "plan_check": true,
-    "verifier": true,
-    "nyquist_validation": true,
-    "_auto_chain_active": false
-  }
+﻿{
+    "hooks":  {
+                  "context_warnings":  true,
+                  "workflow_guard":  true
+              },
+    "parallelization":  true,
+    "commit_docs":  true,
+    "git":  {
+                "branching_strategy":  "none"
+            },
+    "granularity":  "coarse",
+    "mode":  "interactive",
+    "workflow":  {
+                     "plan_check":  true,
+                     "ui_phase":  true,
+                     "auto_advance":  false,
+                     "research":  true,
+                     "_auto_chain_active":  false,
+                     "verifier":  true,
+                     "nyquist_validation":  true,
+                     "research_before_questions":  false,
+                     "ui_safety_gate":  true,
+                     "skip_discuss":  false
+                 },
+    "model_profile":  "inherit"
 }

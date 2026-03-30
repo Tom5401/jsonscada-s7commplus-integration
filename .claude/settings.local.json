@@ -19,7 +19,9 @@
       "Bash(git diff:*)",
       "Bash(git tag:*)",
       "WebSearch",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:vuetifyjs.com)"
     ]
   },
   "defaultMode": "bypassPermissions"
