@@ -1,4 +1,4 @@
-# Requirements: S7CommPlus TagTreeBrowser Overhaul
+﻿# Requirements: S7CommPlus TagTreeBrowser Overhaul
 
 **Defined:** 2026-03-30
 **Core Value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription with full metadata, so operators see real events the moment they occur.
@@ -25,7 +25,7 @@ Requirements for the TagTreeBrowser Overhaul milestone. Each maps to roadmap pha
 
 ### Non-Datablock Tags
 
-- [ ] **AREA-01**: MArea, QArea, and other non-datablock area tags appear alongside datablocks in DatablockBrowser and can be browsed in TagTreeBrowser
+- [x] **AREA-01**: MArea, QArea, and other non-datablock area tags appear alongside datablocks in DatablockBrowser and can be browsed in TagTreeBrowser
 
 ## Future Requirements
 
@@ -63,7 +63,7 @@ Deferred to future release. Tracked but not in current roadmap.
 | DISP-01 | 17 | Pending |
 | WRITE-01 | 18 | Pending |
 | WRITE-02 | 18 | Pending |
-| AREA-01 | 19 | Pending |
+| AREA-01 | 19 | Complete |
 
 **Coverage:**
 - v1.5 requirements: 8 total
