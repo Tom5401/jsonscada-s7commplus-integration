@@ -6,6 +6,7 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.4 — Tag Tree Browser milestone complete 2026-03-27. Full operator workflow: alarms → origin DB name → tag tree with live values.
 **Phase 17 complete (2026-03-30):** TagTreeBrowserPage rewritten with lazy load-children (one level per expand via listS7PlusChildNodes), scoped value refresh (only expanded paths), and TRUE/FALSE boolean display.
+**Phase 18 complete (2026-03-30):** PushValueDialog.vue added to TagTreeBrowser — operators can push new values to writable PLC tags directly from the tag tree; Modify button shows only on writable leaves (commandOfSupervised != 0); OPC WriteRequest (ServiceId 671) POSTed to /Invoke/; digital tags use TRUE/FALSE select, analog/string use text field; command stub tags deduplicated from tree view.
 
 ## Current Milestone: v1.5 TagTreeBrowser Overhaul
 
@@ -97,7 +98,7 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 
 <!-- Current scope — v1.5 TagTreeBrowser Overhaul (phases 18–19) -->
 
-- [ ] Write/push values from TagTreeBrowser leaf nodes (reuse tabular view push-value window)
+- ✓ Write/push values from TagTreeBrowser leaf nodes — PushValueDialog.vue with OPC WriteRequest, Modify button on writable leaves only, digital/analog branching, inline success/error feedback, auto-close — Validated in Phase 18: value-write-dialog
 - [ ] Non-datablock tags (MArea, QArea) alongside datablocks in DatablockBrowser
 
 ### Out of Scope

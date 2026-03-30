@@ -4,13 +4,13 @@ milestone: v1.5
 milestone_name: — TagTreeBrowser Overhaul
 status: executing
 stopped_at: 15-01-PLAN.md complete — all tasks done
-last_updated: "2026-03-30T09:36:03.304Z"
+last_updated: "2026-03-30T12:31:38.318Z"
 last_activity: 2026-03-30
 progress:
   total_phases: 4
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 3
+  total_plans: 3
+  completed_plans: 3
 ---
 
 # Project State
@@ -20,13 +20,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription with full metadata, so operators see real events the moment they occur.
-**Current focus:** Phase 17 — lazy-tree-loading-boolean-display
+**Current focus:** Phase 18 — value-write-dialog
 
 ## Current Position
 
-Phase: 18
+Phase: 19
 Plan: Not started
-Status: Executing Phase 17
+Status: Executing Phase 18
 Last activity: 2026-03-30
 
 ## Performance Metrics

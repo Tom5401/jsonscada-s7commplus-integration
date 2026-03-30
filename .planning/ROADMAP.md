@@ -155,5 +155,5 @@ Plans:
 | 15. TagTreeBrowser & Integration | v1.4 | 1/1 | Complete | 2026-03-27 |
 | 16. Backend — listS7PlusChildNodes Endpoint + Index | v1.5 | 1/1 | Complete    | 2026-03-30 |
 | 17. Lazy Tree Loading + Boolean Display | v1.5 | 1/1 | Complete    | 2026-03-30 |
-| 18. Value Write Dialog | v1.5 | 1/1 | Complete   | 2026-03-30 |
+| 18. Value Write Dialog | v1.5 | 1/1 | Complete    | 2026-03-30 |
 | 19. Non-Datablock Tags | v1.5 | 0/1 | Not started | — |
