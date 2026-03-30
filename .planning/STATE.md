@@ -1,31 +1,33 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.4
-milestone_name: — Tag Tree Browser
-status: v1.4 milestone complete
-stopped_at: 15-01-PLAN.md complete — all tasks done
-last_updated: "2026-03-27T12:26:04.282Z"
-last_activity: 2026-03-27
+milestone: v1.5
+milestone_name: — TagTreeBrowser Overhaul
+status: Defining requirements
+stopped_at: —
+last_updated: "2026-03-30"
+last_activity: 2026-03-30
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-24)
+See: .planning/PROJECT.md (updated 2026-03-30)
 
-**Core value:** Operators can navigate all PLC datablocks and their tag hierarchies from AdminUI, with live values for configured tags — turning a flat unmanageable tag list into a TIA Portal-style tree browser.
-**Current focus:** Phase 15 (TagTreeBrowser & Integration) complete — v1.4 milestone deliverables done
+**Core value:** Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscription with full metadata, so operators see real events the moment they occur.
+**Current focus:** Defining requirements for v1.5 TagTreeBrowser Overhaul
 
 ## Current Position
 
-Phase 15 (tagtreebrowser-integration) — COMPLETE
-Plan 1 of 1 — COMPLETE
+Phase: Not started (defining requirements)
+Plan: —
+Status: Defining requirements
+Last activity: 2026-03-30 — Milestone v1.5 started
 
 ## Performance Metrics
 

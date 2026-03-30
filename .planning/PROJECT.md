@@ -6,6 +6,16 @@ A proof-of-concept C#/.NET driver extension that integrates native S7CommPlus al
 
 **Shipped:** v1.4 — Tag Tree Browser milestone complete 2026-03-27. Full operator workflow: alarms → origin DB name → tag tree with live values.
 
+## Current Milestone: v1.5 TagTreeBrowser Overhaul
+
+**Goal:** Transform TagTreeBrowser from a proof-of-concept into a production-ready tool that handles 100k+ tag databases with lazy loading at every tree level, real value display, value writing, and non-datablock tag support.
+
+**Target features:**
+- Lazy loading at every tree level — new backend endpoint returning direct children per path; Vuetify load-children; value refresh scoped to visible/expanded leaves
+- Real value display (TRUE/FALSE instead of 0/1) — matching tabular view behavior
+- Write/push values — open existing tabular view push-value window from TagTreeBrowser leaf nodes
+- Non-datablock tags (MArea, QArea) — surfaced alongside datablocks in DatablockBrowser
+
 ## Shipped: v1.4 Tag Tree Browser (2026-03-27)
 
 **Goal:** Mirror TIA Portal's hierarchical tag browsing in AdminUI — operators can navigate datablock structure, see live values for configured tags, and open a tag tree directly from the alarms viewer.
@@ -75,6 +85,15 @@ Alarms from S7-1200/S7-1500 PLCs appear in json-scada via native protocol subscr
 - ✓ `DatablockBrowserPage.vue` at `/s7plus-datablocks` — connection dropdown (starts empty), datablock table (db_name + db_number), per-row "Browse Tags" button opens TagTreeBrowser in new tab — Validated in Phase 14: datablockbrowser
 - ✓ `TagTreeBrowserPage.vue` at `/s7plus-tag-tree` — hierarchical tree from `ungroupedDescription` full path, 5s in-place value refresh, touch-on-expand, auto-expand first level; structured datablocks (nested UDT structs) render folder/leaf hierarchy correctly — Validated in Phase 15: tagtreebrowser-integration
 - ✓ `originDbName` cells in S7PlusAlarmsViewerPage render as clickable links (non-empty) opening TagTreeBrowser in new tab with `db=` and `connectionNumber=` params — Validated in Phase 15: tagtreebrowser-integration
+
+### Active
+
+<!-- Current scope — v1.5 TagTreeBrowser Overhaul -->
+
+- [ ] Lazy loading at every tree level — backend endpoint for direct children, Vuetify load-children, scoped value refresh
+- [ ] Real value display (TRUE/FALSE vs 0/1) matching tabular view
+- [ ] Write/push values from TagTreeBrowser leaf nodes (reuse tabular view push-value window)
+- [ ] Non-datablock tags (MArea, QArea) alongside datablocks in DatablockBrowser
 
 ### Out of Scope
 
@@ -165,4 +184,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-03-27 — Phase 15 complete: TagTreeBrowserPage at /s7plus-tag-tree and alarms viewer integration — v1.4 Tag Tree Browser milestone complete*
+*Last updated: 2026-03-30 — Milestone v1.5 TagTreeBrowser Overhaul started*
