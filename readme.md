@@ -110,7 +110,7 @@ The output installer is written to:
 json-scada\platform-windows\installer-release\json-scada_setup_v.0.61.exe
 ```
 
-### Levvel additions included in the build
+### Additions included in the build
 
 - **S7CommPlusClient** (`json-scada/src/S7CommPlusClient`) - compiled by `build.bat`, binary packaged via the `bin\*.*` wildcard in the NSIS script
 - **S7CommPlusDriver** (`S7CommPlusDriver/`) - compiled as a dependency of S7CommPlusClient, output DLLs (including OpenSSL) land in `bin\`
