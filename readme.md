@@ -70,22 +70,41 @@ The NSIS installer script packages many pre-downloaded runtimes and tools that a
 | `inkscape-runtime/` | Inkscape + SCADA extension |
 | `ua-edge-translator-runtime/` | OPC UA Edge Translator |
 
-### 3. Configure build.bat
+### 3. Create a short-path junction
 
-Edit `json-scada\platform-windows\build.bat` and set `JSPATH` to your actual checkout path:
+NSIS does not support long paths. The deeply nested files in some runtime directories exceed Windows' 260-character path limit when combined with a deep checkout path. Create a directory junction so NSIS sees a short base path:
+
+```cmd
+mklink /J C:\jsbuild "c:\path\to\your\checkout\json-scada"
+```
+
+All subsequent build and packaging commands must be run through `C:\jsbuild`, not the real path.
+
+### 4. Configure build.bat
+
+`JSPATH` in `json-scada\platform-windows\build.bat` is pre-set to `C:\jsbuild`. If your junction path differs, update it:
 
 ```bat
-set JSPATH=c:\path\to\your\checkout\json-scada
+set JSPATH=C:\jsbuild
 ```
 
 The script uses system-installed `npm`/`npx` from PATH (not the bundled `nodejs-runtime` directory which is only present in release builds).
 
-### 4. Build all binaries
+### 5. Generate SSL certificate
+
+`nginx.key` is excluded from git (`*.key` is in `.gitignore`). Generate a self-signed cert once — the same cert/key can be reused across all installations:
+
+```cmd
+cd C:\jsbuild\conf-templates
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout nginx.key -out nginx.crt -subj "/CN=localhost"
+```
+
+### 6. Build all binaries
 
 Open a **Developer Command Prompt for VS 2022** (required for `msbuild` and .NET tooling) and run:
 
 ```cmd
-json-scada\platform-windows\build.bat
+C:\jsbuild\platform-windows\build.bat
 ```
 
 This compiles all components:
@@ -95,20 +114,37 @@ This compiles all components:
 
 All compiled binaries are output to `json-scada\bin\`.
 
-### 5. Build the installer
+### 7. Build the runtime pack (once, or when runtimes change)
+
+The installer is split into a main installer (application code, rebuilt each release) and a separate runtime pack (large third-party runtimes, rarely changes). The runtime pack must be built once before the first installer build, and again only when runtimes are updated.
+
+Requires **7-Zip** installed at `C:\Program Files\7-Zip\`.
+
+```cmd
+C:\jsbuild\platform-windows\build-runtime-pack.bat
+```
+
+Output: `json-scada\platform-windows\installer-release\json-scada-runtimes.7z`
+
+### 8. Build the main installer
 
 After all binaries are built:
 
 ```cmd
-cd json-scada\platform-windows
+cd C:\jsbuild\platform-windows
 makensis json-scada.nsi
 ```
 
-The output installer is written to:
+Output: `json-scada\platform-windows\installer-release\json-scada_setup_v.0.61.exe`
 
-```
-json-scada\platform-windows\installer-release\json-scada_setup_v.0.61.exe
-```
+### End-user installation
+
+The end user receives two files and must apply them in order:
+
+1. Extract `json-scada-runtimes.7z` to `C:\json-scada\` using 7-Zip
+2. Run `json-scada_setup_v.0.61.exe`
+
+The NSIS installer will abort with a clear error message if step 1 was skipped.
 
 ### Additions included in the build
 
